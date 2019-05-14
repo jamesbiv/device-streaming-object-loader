@@ -1,4 +1,4 @@
-<h1>Network Performance Kernel (NPK) for Progressive Web Applications (PWA) </h1>
+<h1>Network Performance Kernel (NPK) for Progressive Web Applications (PWA)</h1>
 
 <h2>Introduction</h2>
 
@@ -22,15 +22,11 @@ The areas in which NPK can deliver functional advantages are
 
 Possible advancements in features could include modularisation, however, the main drawback will be purpose and download footprint when other parts of the NPK would be better suited. However, some parts that could be considered useful for asynchronously retrieved or even direct modularisation would include the following.
 
-<h2>Global performance functions / tool sets</h2>
+<b>Global performance functions / tool sets</b> - E.G Create a lazy loading algorithm that decides whether to lazy load images based on connection quality rather than viewport.
 
-For example: Create a lazy loading algorithm that decides weather to lazy load images based on connection quality rather than viewport. Or progressively step the download process in the same way as environment delivery.
+<b>ServiceWorker event listing and frameworking</b> - The NPK can allow for a global interface for device level interactions. Such features can include, structure based cache management; or push notification handlers and services.</p>
 
-<h3>ServiceWorker management</h3>
-
-By saving the states of mobile centric data and offering them based on the service worker request handlers NPK can allow for a global way for these systems to interact independently. For example, structure based cache management; or push notification handlers and services.
-
-<h3>NPK Architecture</h3>
+<h2>NPK Architecture</h2>
 
 NPK is broken down into the following key areas
 
@@ -38,16 +34,18 @@ NPK is broken down into the following key areas
 <li>Network (and processor) performance</li>
 <li>Library bundling and configuration</li>
 <li>Prioritisation of initialisation<l/i>
-<li>Advanced recursive download configuration</li>
+<li>Concise and asynchronous object download</li>
 </ol>
 
-<h3>Network and processor performance</h3>
+<h3>i. Network (and processor) performance</h3>
 
-Network and processor performance will be a fairly simple interaction between web standards performance[needs citation] and will simply store the mean states in various states and stages.
+Network and processor performance will be a fairly simple interaction between <a href="https://www.w3.org/TR/resource-timing/#resource-timing">Resource Timing</a> and calculating the mean of all incoming results. Further, the app will store all mean states in various states and stages of the download process.
 
-<h3>Library bundling and configuration</h3>
+<h3>ii. Library bundling and configuration</h3>
 
-Being able to choose what Javascript/CSS files are downloaded with what bundle version by Download Rate. Note: the threshold will be configurable.
+Being able to choose what Javascript/CSS files are downloaded with what bundle version by a defined download rate. 
+
+<em>Note: the threshold will be configurable.</em>
 
 <ol type="a">
 <li>low interactive</li>
@@ -55,21 +53,29 @@ Being able to choose what Javascript/CSS files are downloaded with what bundle v
 <li>custom download threshold</li> 
 </ol>
 
-Further the treatment of each mode if the threshold is not met.
+<h3>iii. Prioritisation of initialisation</h3>
+
+The following strategies can take place if the the rate of download is not met. 
 
 <ol type="a">
 	<li>Ask to download the full interactive in the background</li>
 	<li>Assume to download the full interactive in the background</li>
 	<li>Once the download is met ask to show the full interactive mode</li>
-	<li>Ask other custom thresholds to be download </li>
+	<li>Ask other custom thresholds to be download</li>
 	<li>Automatically step custom thresholds once full interactive has loaded or vice-versa</li>
 </ol>
 
-<h2>Footprint</h2>
+<h3>iv. Concise and asynchronous object download</h3>
 
-In order for the NPK to work the footprint needs to stay under about 65-70k compiled (approx).
+All object downloads should be handled in a way that allows for maximum download efficiency and reuse. Javascript/CSS libraries will be cross shared and layered allowing for reuse whenever possible.
 
-<h3>Initilization Process</h3>
+<h2>Developer Notes</h2>
+
+<h3>Footprint</h3>
+
+In order for the NPK to work the footprint needs to stay under about 50k compiled (approx).
+
+<h3>Initialisation Process</h3>
 	
 Network processor performance initialisation
 
@@ -81,7 +87,6 @@ Network processor performance initialisation
 Init service worker and start caching (asynch)
 
 Request bundling based on Kb/s thresholds (asynch)
-
 
 <ul>
 	<li>If the kbps threshold is passed load the relevant bundle in varied experience bands if needed</li>
