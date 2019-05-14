@@ -14,82 +14,96 @@ Meanwhile, the full responsive and interactive rich online experience is progres
 
 The areas in which NPK can deliver functional advantages are
 
-- Progressively load the full interactive experience while offering the low interactive version in the interim.
-- Grouped deferred and asynchronous CSS delivery.
-- Grouped deferred JavaScript module/library delivery.
+<ul>
+<li>Progressively load the full interactive experience while offering the low interactive version in the interim.</li>
+<li>Grouped deferred and asynchronous CSS delivery.</li>
+<li>Grouped deferred JavaScript module/library delivery.</li>
+</ul>
 
 Possible advancements in features could include modularisation, however, the main drawback will be purpose and download footprint when other parts of the NPK would be better suited. However, some parts that could be considered useful for asynchronously retrieved or even direct modularisation would include the following.
 
-Global performance functions / tool sets
+<h2>Global performance functions / tool sets</h2>
 
 For example: Create a lazy loading algorithm that decides weather to lazy load images based on connection quality rather than viewport. Or progressively step the download process in the same way as environment delivery.
 
-ServiceWorker management
+<h3>ServiceWorker management</h3>
 
 By saving the states of mobile centric data and offering them based on the service worker request handlers NPK can allow for a global way for these systems to interact independently. For example, structure based cache management; or push notification handlers and services.
 
-NPK Architecture
+<h3>NPK Architecture</h3>
 
 NPK is broken down into the following key areas
 
-a) Network (and processor) performance
-b) Library bundling and configuration
-c) Prioritisation of initialisation 
-d) Advanced recursive download configuration 
+<ol type="i">
+<li>Network (and processor) performance</li>
+<li>Library bundling and configuration</li>
+<li>Prioritisation of initialisation<l/i>
+<li>Advanced recursive download configuration</li>
+</ol>
 
-Network and processor performance 
+<h3>Network and processor performance</h3>
 
-Network and processor performance will be a fairly simple interaction between web standards performance[cite rfc blingblingbling] and will simply store the mean states in various states and stages.
+Network and processor performance will be a fairly simple interaction between web standards performance[needs citation] and will simply store the mean states in various states and stages.
 
-Library bundling and configuration
+<h3>Library bundling and configuration</h3>
 
 Being able to choose what Javascript/CSS files are downloaded with what bundle version by Download Rate. Note: the threshold will be configurable.
 
-a) low interactive 
-b) full interactive 
-c) custom download threshold. 
+<ol type="a">
+<li>low interactive</li>
+<li>full interactive</li>
+<li>custom download threshold</li> 
+</ol>
 
 Further the treatment of each mode if the threshold is not met.
 
-a) Ask to download the full interactive in the background
-b) Assume to download the full interactive in the background
-c) Once the download is met ask to show the full interactive mode
-d) Ask other custom thresholds to be download 
-e) Automatically step custom thresholds once full interactive has loaded or vice-versa
+<ol type="a">
+	<li>Ask to download the full interactive in the background</li>
+	<li>Assume to download the full interactive in the background</li>
+	<li>Once the download is met ask to show the full interactive mode</li>
+	<li>Ask other custom thresholds to be download </li>
+	<li>Automatically step custom thresholds once full interactive has loaded or vice-versa</li>
+</ol>
 
-Footprint
+<h2>Footprint</h2>
 
-In order for the NPK to work the footprint needs to stay under about 64k compiled.
+In order for the NPK to work the footprint needs to stay under about 65-70k compiled (approx).
 
-Flow
+<h3>Initilization Process</h3>
 	
 Network processor performance initialisation
 
-- Grab the average of all objects downloaded, usually index file, init.js itself, manifest, favicon
-- Continue to poll the average as objects download.
+<ul>
+	<li>Grab the average of all objects downloaded, usually index file, init.js itself, manifest, favicon</li>
+	<li>Continue to poll the average as objects download.</li>
+</ul>
 
 Init service worker and start caching (asynch)
 
 Request bundling based on Kb/s thresholds (asynch)
 
-- If the kbps threshold is passed load the relevant bundle in varied experience bands if needed
-- If the kbps threshold has falls below minimum load low interactive mode
 
-Listeners
+<ul>
+	<li>If the kbps threshold is passed load the relevant bundle in varied experience bands if needed</li>
+	<li>If the kbps threshold has falls below minimum load low interactive mode</li>
+</ul>
 
-on Experience - CSS/Javascript bundle has loaded
-on CSS Bundle load - as above
-on JavaScript Bundle load - as above
+<h3>Listeners</h3>
 
-Other enhancements and ideas
+<b>on Experience</b> - CSS/Javascript bundle has loaded<br />
+<b>on CSS Bundle load</b> - as above<br />
+<b>on JavaScript Bundle load</b> - as above
 
-Lazy Load Bundles (scrolling)
+<h3>Other enhancements and ideas</h3>
+
+Lazy Load Bundles (scrolling)<br />
 eventHandler (onclick) loads
 
-Pseudo Breakdown
+<h2><em>Pseudo</em> Breakdown<h2>
 
-NPK Initilization
+<h3><em>Pseudo</em> NPK Initilization</h3>
 
+```javascript
 var kbps = Network.NetworkPerformanceAverage();
 
 Bundle('lowinteractive' , 'interactive'| 0, 2000kpbs, 
@@ -116,3 +130,4 @@ if(kpbs > lowinteractive) {
 	RunLowInteractive;
 	NotifyLowInteractive; // Inform that upon load full interactive will be available (optional)
 } 
+```
