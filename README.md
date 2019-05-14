@@ -97,7 +97,7 @@ Pseudo Breakdown
 
 NPK Initilization
 
-<code>
+```javascript
 var kbps = Network.NetworkPerformanceAverage();
 
 Bundle('lowinteractive' , 'interactive'| 0, 2000kpbs, 
@@ -124,4 +124,4 @@ if(kpbs > lowinteractive) {
 	RunLowInteractive;
 	NotifyLowInteractive; // Inform that upon load full interactive will be available (optional)
 } 
-</code>
+```
