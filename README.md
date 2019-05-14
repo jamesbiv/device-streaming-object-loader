@@ -1,6 +1,6 @@
-Network Performance Kernel (NPK) for Progressive Web Applications (PWA) 
+<h1>Network Performance Kernel (NPK) for Progressive Web Applications (PWA) </h1>
 
-Introduction
+<h2>Introduction</h2>
 
 In line with Progressive Web Application (PWA) technologies. I present the Network Performance Kernel (NPK) as an all-in-one resource and performance management environment for dynamic code and resource delivery.
 
