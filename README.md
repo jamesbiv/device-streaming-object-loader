@@ -34,11 +34,12 @@ By saving the states of mobile centric data and offering them based on the servi
 
 NPK is broken down into the following key areas
 
-<ol>
-<li>Network (and processor) performance
-b) Library bundling and configuration
-c) Prioritisation of initialisation 
-d) Advanced recursive download configuration 
+<ol type="i">
+<li>Network (and processor) performance</li>
+<li>Library bundling and configuration</li>
+<li>Prioritisation of initialisation<l/i>
+<li>Advanced recursive download configuration</li>
+</ol>
 
 Network and processor performance 
 
@@ -48,9 +49,12 @@ Library bundling and configuration
 
 Being able to choose what Javascript/CSS files are downloaded with what bundle version by Download Rate. Note: the threshold will be configurable.
 
-a) low interactive 
-b) full interactive 
-c) custom download threshold. 
+<ol type="a">
+<li>low interactive</li>
+<li>full interactive</li>
+<li>custom download threshold</li> 
+</ol>
+
 
 Further the treatment of each mode if the threshold is not met.
 
@@ -93,6 +97,7 @@ Pseudo Breakdown
 
 NPK Initilization
 
+<code>
 var kbps = Network.NetworkPerformanceAverage();
 
 Bundle('lowinteractive' , 'interactive'| 0, 2000kpbs, 
@@ -119,3 +124,4 @@ if(kpbs > lowinteractive) {
 	RunLowInteractive;
 	NotifyLowInteractive; // Inform that upon load full interactive will be available (optional)
 } 
+</code>
