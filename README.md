@@ -15,9 +15,9 @@ Meanwhile, the full responsive and interactive rich online experience is progres
 The areas in which NPK can deliver functional advantages are
 
 <ul>
-	<li>Progressively load the full interactive experience while offering the low interactive version in the interim.</li>
-	<li>Grouped deferred and asynchronous CSS delivery.</li>
-	<li>Grouped deferred JavaScript module/library delivery.</li>
+<li>Progressively load the full interactive experience while offering the low interactive version in the interim.</li>
+<li>Grouped deferred and asynchronous CSS delivery.</li>
+<li>Grouped deferred JavaScript module/library delivery.</li>
 </ul>
 
 Possible advancements in features could include modularisation, however, the main drawback will be purpose and download footprint when other parts of the NPK would be better suited. However, some parts that could be considered useful for asynchronously retrieved or even direct modularisation would include the following.
@@ -41,11 +41,11 @@ NPK is broken down into the following key areas
 <li>Advanced recursive download configuration</li>
 </ol>
 
-Network and processor performance 
+<h3>Network and processor performance</h3>
 
 Network and processor performance will be a fairly simple interaction between web standards performance[needs citation] and will simply store the mean states in various states and stages.
 
-Library bundling and configuration
+<h3>Library bundling and configuration</h3>
 
 Being able to choose what Javascript/CSS files are downloaded with what bundle version by Download Rate. Note: the threshold will be configurable.
 
@@ -55,20 +55,21 @@ Being able to choose what Javascript/CSS files are downloaded with what bundle v
 <li>custom download threshold</li> 
 </ol>
 
-
 Further the treatment of each mode if the threshold is not met.
 
-a) Ask to download the full interactive in the background
-b) Assume to download the full interactive in the background
-c) Once the download is met ask to show the full interactive mode
-d) Ask other custom thresholds to be download 
-e) Automatically step custom thresholds once full interactive has loaded or vice-versa
+<ol type="a">
+	<li>Ask to download the full interactive in the background</li>
+	<li>Assume to download the full interactive in the background</li>
+	<li>Once the download is met ask to show the full interactive mode</li>
+	<li>Ask other custom thresholds to be download </li>
+	<li>Automatically step custom thresholds once full interactive has loaded or vice-versa</li>
+</ol>
 
-Footprint
+<h2>Footprint</h2>
 
 In order for the NPK to work the footprint needs to stay under about 64k compiled.
 
-Flow
+<h3>Initilization Process</h3>
 	
 Network processor performance initialisation
 
@@ -82,7 +83,7 @@ Request bundling based on Kb/s thresholds (asynch)
 - If the kbps threshold is passed load the relevant bundle in varied experience bands if needed
 - If the kbps threshold has falls below minimum load low interactive mode
 
-Listeners
+<h3>Listeners</h3>
 
 on Experience - CSS/Javascript bundle has loaded
 on CSS Bundle load - as above
@@ -93,9 +94,9 @@ Other enhancements and ideas
 Lazy Load Bundles (scrolling)
 eventHandler (onclick) loads
 
-Pseudo Breakdown
+<h2><em>Pseudo</em> Breakdown<h2>
 
-NPK Initilization
+<h3><em>Pseudo</em> NPK Initilization</h3>
 
 ```javascript
 var kbps = Network.NetworkPerformanceAverage();
