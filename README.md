@@ -67,31 +67,36 @@ Further the treatment of each mode if the threshold is not met.
 
 <h2>Footprint</h2>
 
-In order for the NPK to work the footprint needs to stay under about 64k compiled.
+In order for the NPK to work the footprint needs to stay under about 65-70k compiled (approx).
 
 <h3>Initilization Process</h3>
 	
 Network processor performance initialisation
 
-- Grab the average of all objects downloaded, usually index file, init.js itself, manifest, favicon
-- Continue to poll the average as objects download.
+<ul>
+	<li>Grab the average of all objects downloaded, usually index file, init.js itself, manifest, favicon</li>
+	<li>Continue to poll the average as objects download.</li>
+</ul>
 
 Init service worker and start caching (asynch)
 
 Request bundling based on Kb/s thresholds (asynch)
 
-- If the kbps threshold is passed load the relevant bundle in varied experience bands if needed
-- If the kbps threshold has falls below minimum load low interactive mode
+
+<ul>
+	<li>If the kbps threshold is passed load the relevant bundle in varied experience bands if needed</li>
+	<li>If the kbps threshold has falls below minimum load low interactive mode</li>
+</ul>
 
 <h3>Listeners</h3>
 
-on Experience - CSS/Javascript bundle has loaded
-on CSS Bundle load - as above
-on JavaScript Bundle load - as above
+<b>on Experience</b> - CSS/Javascript bundle has loaded<br />
+<b>on CSS Bundle load</b> - as above<br />
+<b>on JavaScript Bundle load</b> - as above
 
-Other enhancements and ideas
+<h3>Other enhancements and ideas</h3>
 
-Lazy Load Bundles (scrolling)
+Lazy Load Bundles (scrolling)<br />
 eventHandler (onclick) loads
 
 <h2><em>Pseudo</em> Breakdown<h2>
