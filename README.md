@@ -14,32 +14,35 @@ Meanwhile, the full responsive and interactive rich online experience is progres
 
 The areas in which NPK can deliver functional advantages are
 
-- Progressively load the full interactive experience while offering the low interactive version in the interim.
-- Grouped deferred and asynchronous CSS delivery.
-- Grouped deferred JavaScript module/library delivery.
+<ul>
+	<li>Progressively load the full interactive experience while offering the low interactive version in the interim.</li>
+	<li>Grouped deferred and asynchronous CSS delivery.</li>
+	<li>Grouped deferred JavaScript module/library delivery.</li>
+</ul>
 
 Possible advancements in features could include modularisation, however, the main drawback will be purpose and download footprint when other parts of the NPK would be better suited. However, some parts that could be considered useful for asynchronously retrieved or even direct modularisation would include the following.
 
-Global performance functions / tool sets
+<h2>Global performance functions / tool sets</h2>
 
 For example: Create a lazy loading algorithm that decides weather to lazy load images based on connection quality rather than viewport. Or progressively step the download process in the same way as environment delivery.
 
-ServiceWorker management
+<h3>ServiceWorker management</h3>
 
 By saving the states of mobile centric data and offering them based on the service worker request handlers NPK can allow for a global way for these systems to interact independently. For example, structure based cache management; or push notification handlers and services.
 
-NPK Architecture
+<h3>NPK Architecture</h3>
 
 NPK is broken down into the following key areas
 
-a) Network (and processor) performance
+<ol>
+<li>Network (and processor) performance
 b) Library bundling and configuration
 c) Prioritisation of initialisation 
 d) Advanced recursive download configuration 
 
 Network and processor performance 
 
-Network and processor performance will be a fairly simple interaction between web standards performance[cite rfc blingblingbling] and will simply store the mean states in various states and stages.
+Network and processor performance will be a fairly simple interaction between web standards performance[needs citation] and will simply store the mean states in various states and stages.
 
 Library bundling and configuration
 
