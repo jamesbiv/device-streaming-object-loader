@@ -1,18 +1,22 @@
-<h1>Network Performance Kernel (NPK) for Progressive Web Applications (PWA)</h1>
+<h1>Device Streaming Object Library (DSOLib)</h1>
+
+<h2>For Progressive Web Applications (PWA)</h2>
+
+<i>Previously named Network Performance Kernel (NPK)</i>
 
 <h2>Introduction</h2>
 
-In line with Progressive Web Application (PWA) technologies. I present the Network Performance Kernel (NPK) as an all-in-one resource and performance management environment for dynamic code and resource delivery.
+In line with Progressive Web Application (PWA) technologies. I present the Device Streaming Object Library (DSOLib) as an all-in-one resource and performance management environment for dynamic code and resource delivery.
 
-NPK is designed to be a lightweight service that tracks the networks' link performance in order to provide the most efficient and effective quality of user experience (QoUE).
+DSOLib is designed to be a lightweight service that tracks the networks' link performance in order to provide the most efficient and effective quality of user experience (QoUE).
 
-One of NPK's key functions will be to as early as possible in the application's initial download phase determine the current mean performance metric of the network speed and then signal a slow or fast download Kpbs rate and offer various strategies to enrich the QoUE.
+One of the DSOLib's key functions will be to as early as possible in the application's initial download phase is determine the current network speed and signal a slow or fast download rate in Kilobytes per second (Kbps) and then offer various strategies to enrich the QoUE.
 
-If the NPK detects a slow Kpbs download rate, instead of downloading the entire interactive experience. NPK will begin downloading the low interactive version of the site which will have reduced or no user interactive functionality. 
+If the DSOLib detects a slow Kpbs download rate, instead of downloading the entire interactive experience. DSOLib will begin downloading the low interactive version of the site which will have reduced or no user interactive functionality. 
 
 Meanwhile, the full responsive and interactive rich online experience is progressively downloaded in the background. Ideally if the connection strength is rated well, the rich experience is directly offered. Further if frameworks and libraries cross over between both states, these libraries will be shared.
 
-The areas in which NPK can deliver functional advantages are
+The areas in which DSOLib can deliver functional advantages are
 
 <ul>
 <li>Progressively load the full interactive experience while offering the low interactive version in the interim.</li>
@@ -20,15 +24,15 @@ The areas in which NPK can deliver functional advantages are
 <li>Grouped deferred JavaScript module/library delivery.</li>
 </ul>
 
-Possible advancements in features could include modularisation, however, the main drawback will be purpose and download footprint when other parts of the NPK would be better suited. However, some parts that could be considered useful for asynchronously retrieved or even direct modularisation would include the following.
+Possible advancements in features could include modularisation, however, the main drawback will be purpose and download footprint when other parts of the DSOLib would be better suited. However, some parts that could be considered useful for asynchronously retrieved or even direct modularisation would include the following.
 
 <b>Global performance functions / tool sets</b> - E.G Create a lazy loading algorithm that decides whether to lazy load images based on connection quality rather than viewport.
 
-<b>ServiceWorker event listing and frameworking</b> - The NPK can allow for a global interface for device level interactions. Such features can include, structure based cache management; or push notification handlers and services.</p>
+<b>ServiceWorker event listing and frameworking</b> - The DSOLib can allow for a global interface for device level interactions. Such features can include, structure based cache management; or push notification handlers and services.</p>
 
-<h2>NPK Architecture</h2>
+<h2>DSOLib Architecture</h2>
 
-NPK is broken down into the following key areas
+DSOLib is broken down into the following key areas
 
 <ol type="i">
 <li>Network (and processor) performance</li>
@@ -39,7 +43,7 @@ NPK is broken down into the following key areas
 
 <h3>i. Network (and processor) performance</h3>
 
-Network and processor performance will be a fairly simple interaction between <a href="https://www.w3.org/TR/resource-timing/#resource-timing">Resource Timing</a> and calculating the mean of all incoming results. Further, the app will store all mean states in various states and stages of the download process.
+Network and processor performance will be a fairly simple interaction between <a href="https://www.w3.org/TR/resource-timing/#resource-timing">Resource Timing</a> and calculating the download rate of an incoming result or ping test and then using the download rate in Kbps to decide an appropriate download strategy.
 
 <h3>ii. Library bundling and configuration</h3>
 
@@ -58,11 +62,11 @@ Being able to choose what Javascript/CSS files are downloaded with what bundle v
 The following strategies can take place if the the rate of download is not met. 
 
 <ol type="a">
-	<li>Ask to download the full interactive in the background</li>
-	<li>Assume to download the full interactive in the background</li>
-	<li>Once the download is met ask to show the full interactive mode</li>
-	<li>Ask other custom thresholds to be download</li>
-	<li>Automatically step custom thresholds once full interactive has loaded or vice-versa</li>
+<li>Ask to download the full interactive in the background</li>
+<li>Assume to download the full interactive in the background</li>
+<li>Once the download is met ask to show the full interactive mode</li>
+<li>Ask other custom thresholds to be download</li>
+<li>Automatically step custom thresholds once full interactive has loaded or vice-versa</li>
 </ol>
 
 <h3>iv. Concise and asynchronous object download</h3>
@@ -73,15 +77,16 @@ All object downloads should be handled in a way that allows for maximum download
 
 <h3>Footprint</h3>
 
-In order for the NPK to work the footprint needs to stay under about 50k compiled (approx).
+In order for the library to work the footprint needs to stay under about 50k compiled (approx).
 
 <h3>Initialisation Process</h3>
 	
 Network processor performance initialisation
 
 <ul>
-	<li>Grab the average of all objects downloaded, usually index file, init.js itself, manifest, favicon</li>
-	<li>Continue to poll the average as objects download.</li>
+	<li>Request a small data object such as a image or file.</li>
+	<li>Use the last recorded Kpbs rate to decide on bundling.</li>
+	<li>Contine to download other bundles in the background after the inital download offering.</li>
 </ul>
 
 Init service worker and start caching (asynch)
@@ -103,36 +108,3 @@ Request bundling based on Kb/s thresholds (asynch)
 
 Lazy Load Bundles (scrolling)<br />
 eventHandler (onclick) loads
-
-<h2><em>Pseudo</em> Breakdown<h2>
-
-<h3><em>Pseudo</em> NPK Initilization</h3>
-
-```javascript
-var kbps = Network.NetworkPerformanceAverage();
-
-Bundle('lowinteractive' , 'interactive'| 0, 2000kpbs, 
-	true | false, 
-	Javascript Libs: 'vendor-angular', 'vendor-bootstrap', 'vendor-jquery',
-	Javascript Apps: 'app.js', 'module.js'
-	Javascript Init: 'init.js'
-	Css Libs: 'vendor-boostrap'
-	Css App: 'apps.css',
-	Css Init: 'css-init.css');
-	
-ServiceWorkerCache(['app.js', expires], ['app.css', 100]);
-
-ServiceWorkerCacheByType('image/jpeg', nocache);
-
-if(kpbs > lowinteractive) {
- 	forecach(interacitvemode) {
-		if(kbps >= interactivemode) {
-			DefineSelectedMode;
-		}
-	}
-	RunSelectedMode;
-}  else {
-	RunLowInteractive;
-	NotifyLowInteractive; // Inform that upon load full interactive will be available (optional)
-} 
-```
