@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="theme-color" content="#cccccc" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>Device Streaming Object Loader for Progressive Web Applications</title>
+	<meta name="description" content="Device Streaming Object Loader for Progressive Web Applications" />
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="#cccccc">
+	<meta name="apple-mobile-web-app-title" content="Network Performance Kernel">
+	<meta name="msapplication-TileImage" content="">
+	<meta name="msapplication-TileColor" content="#cccccc">
+	<link href="" rel="apple-touch-icon">
+	<link href="/manifest.json" rel="manifest" />
+	<style>
+		<!-- Critical rendering path AboveTheFold and font defintions
+		.example-css {
+			font-weight: bold
+		}
+		-->
+	</style>
+</head>
+
+<body>
+
+	<h1>Content Body</h1>
+
+	<img src="https://avatars2.githubusercontent.com/u/16272529" alt="" width="200" height="200" />
+
+	<p>Last Kbps: <span id="kbpsOutput">0.00</span> (<span id="mbpsOutput">0.00</span> Mbps)</p>
+	<p>TransferSize: <span id="resourceOutput">0</span></p>
+
+	<h2>Console Log</h2>
+
+	<textarea id="logger" rows=10 style="width: 90%"></textarea>
+	<script type="text/javascript">
+		(function () {
+			if (!console) {
+				console = {};
+			}
+
+			var oldConsoleLog = console.log;
+			var logger = document.getElementById('logger');
+
+			console.log = function (message) {
+				if (typeof message === 'object') {
+					logger.innerHTML += "> " + (JSON && JSON.stringify ? JSON.stringify(message) : String(message)) + '\r\n';
+				} else {
+					logger.innerHTML += "> " + message + '\r\n';
+				}
+				logger.scrollTop = logger.scrollHeight
+			}
+		})(); 
+	</script>
+
+	<!-- Noscript fallovers go here -->
+	<noscript>
+		<link href="" type="text/css" rel="stylesheet" />
+	</noscript>
+
+	<!-- For now this is a nonblocking include, for production builds 
+	dsoLoader.js need to be compressed and inserted as inline in order to ensure it is a part of the inital payload -->
+	<script src="dsoLoader.js"></script>
+</body>
+
+</html>

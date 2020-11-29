@@ -1,4 +1,4 @@
-<h1>Device Streaming Object Library (DSOLib)</h1>
+<h1>Device Streaming Object Loader (DSO Loader)</h1>
 
 <h2>For Progressive Web Applications (PWA)</h2>
 
@@ -6,17 +6,17 @@
 
 <h2>Introduction</h2>
 
-In line with Progressive Web Application (PWA) technologies. I present the Device Streaming Object Library (DSOLib) as an all-in-one resource and performance management environment for dynamic code and resource delivery.
+In line with Progressive Web Application (PWA) technologies. I present the Device Streaming Object Library (DSO Loader) as an all-in-one resource and performance management environment for dynamic code and resource delivery.
 
-DSOLib is designed to be a lightweight service that tracks the networks' link performance in order to provide the most efficient and effective quality of user experience (QoUE).
+DSO Loader is designed to be a lightweight service that tracks the networks' link performance in order to provide the most efficient and effective quality of user experience (QoUE).
 
-One of the DSOLib's key functions will be to as early as possible in the application's initial download phase is determine the current network speed and signal a slow or fast download rate in Kilobytes per second (Kbps) and then offer various strategies to enrich the QoUE.
+One of the DSO Loader's key functions will be to as early as possible in the application's initial download phase is determine the current network speed and signal a slow or fast download rate in Kilobytes per second (Kbps) and then offer various strategies to enrich the QoUE.
 
-If the DSOLib detects a slow Kpbs download rate, instead of downloading the entire interactive experience. DSOLib will begin downloading the low interactive version of the site which will have reduced or no user interactive functionality. 
+If the DSO Loader detects a slow Kpbs download rate, instead of downloading the entire interactive experience. DSO Loader will begin downloading the low interactive version of the site which will have reduced or no user interactive functionality. 
 
 Meanwhile, the full responsive and interactive rich online experience is progressively downloaded in the background. Ideally if the connection strength is rated well, the rich experience is directly offered. Further if frameworks and libraries cross over between both states, these libraries will be shared.
 
-The areas in which DSOLib can deliver functional advantages are
+The areas in which DSO Loader can deliver functional advantages are
 
 <ul>
 <li>Progressively load the full interactive experience while offering the low interactive version in the interim.</li>
@@ -24,15 +24,15 @@ The areas in which DSOLib can deliver functional advantages are
 <li>Grouped deferred JavaScript module/library delivery.</li>
 </ul>
 
-Possible advancements in features could include modularisation, however, the main drawback will be purpose and download footprint when other parts of the DSOLib would be better suited. However, some parts that could be considered useful for asynchronously retrieved or even direct modularisation would include the following.
+Possible advancements in features could include modularisation, however, the main drawback will be purpose and download footprint when other parts of the DSO Loader would be better suited. However, some parts that could be considered useful for asynchronously retrieved or even direct modularisation would include the following.
 
 <b>Global performance functions / tool sets</b> - E.G Create a lazy loading algorithm that decides whether to lazy load images based on connection quality rather than viewport.
 
-<b>ServiceWorker event listing and frameworking</b> - The DSOLib can allow for a global interface for device level interactions. Such features can include, structure based cache management; or push notification handlers and services.</p>
+<b>ServiceWorker event listing and frameworking</b> - The DSO Loader can allow for a global interface for device level interactions. Such features can include, structure based cache management; or push notification handlers and services.</p>
 
-<h2>DSOLib Architecture</h2>
+<h2>DSO Loader Architecture</h2>
 
-DSOLib is broken down into the following key areas
+DSO Loader is broken down into the following key areas
 
 <ol type="i">
 <li>Network (and processor) performance</li>
