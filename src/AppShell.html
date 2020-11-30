@@ -17,7 +17,7 @@
 	<style>
 		<!-- Critical rendering path AboveTheFold and font defintions
 		.example-css {
-			font-weight: bold
+			font-weight: bold;
 		}
 		-->
 	</style>
@@ -42,17 +42,36 @@
 			}
 
 			var oldConsoleLog = console.log;
-			var logger = document.getElementById('logger');
+			var logger = document.getElementById("logger");
+
+			Error.prepareStackTrace = function (_, structuredStackTrace) {
+				return (
+					structuredStackTrace[1].getFileName().split("/").pop() +
+					":" +
+					structuredStackTrace[1].getLineNumber()
+				);
+			};
+
+			var getStackTrace = function () {
+				var obj = {};
+				Error.captureStackTrace(obj, getStackTrace);
+				return obj.stack;
+			};
 
 			console.log = function (message) {
-				if (typeof message === 'object') {
-					logger.innerHTML += "> " + (JSON && JSON.stringify ? JSON.stringify(message) : String(message)) + '\r\n';
+				if (typeof message === "object") {
+					logger.innerHTML +=
+						"<" +
+						getStackTrace() +
+						">: " +
+						(JSON && JSON.stringify ? JSON.stringify(message) : String(message)) +
+						"\r\n";
 				} else {
-					logger.innerHTML += "> " + message + '\r\n';
+					logger.innerHTML += "<" + getStackTrace() + ">: " + message + "\r\n";
 				}
-				logger.scrollTop = logger.scrollHeight
-			}
-		})(); 
+				logger.scrollTop = logger.scrollHeight;
+			};
+		})();
 	</script>
 
 	<!-- Noscript fallovers go here -->
@@ -60,9 +79,9 @@
 		<link href="" type="text/css" rel="stylesheet" />
 	</noscript>
 
-	<!-- For now this is a nonblocking include, for production builds 
-	dsoLoader.js need to be compressed and inserted as inline in order to ensure it is a part of the inital payload -->
-	<script src="dsoLoader.js"></script>
+	<!-- For now this is a nonblocking include, for production builds dsoLoader.js needs to be 
+	compressed and inserted as inline in order to ensure it is a part of the inital payload -->
+	<script src="dsoLoader.js" type="text/javascript"></script>
 </body>
 
 </html>
