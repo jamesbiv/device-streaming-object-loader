@@ -1,302 +1,22 @@
-"use strict";
-
 /**
- * @constructor DSOConfig
+ * @constructor DSOLoader
+ * @param {DSOConfig} dsoConfig
+ * @param {DSOPing} dsoPing
  * @param {boolean} debug
  */
-var DSOConfig = function (debug = false) {
+export var DSOLoader = function (
+  dsoConfig = undefined,
+  dsoPing = undefined,
+  debug = false
+) {
   /*
    * Global declarations
    */
   this.debug = debug;
 
-  this.ping = true;
-  this.stream = true;
+  this.dsoConfig = dsoConfig;
+  this.dsoPing = dsoPing;
 
-  this.performanceEnabled = false;
-
-  /*
-   * Mode Callbacks
-   */
-  this.onnonInteractiveLoad = function () {}; // Callback
-  this.onnonInteractiveLoaded = false; // Changes to true
-
-  this.onInteractiveLoad = function () {}; // Callback
-  this.onInteractiveLoadLoaded = false; // Changes to true
-
-  this.onCustomThresholdLoad = function () {}; // Callback
-  this.onCustomThresholdLoaded = false; // Changes to true
-
-  /*
-   * Threshold in kpbs for interactive to non interactive (15kbps is very slow :))
-   */
-  this.threshold = 15;
-
-  /*
-   * Mode Callbacks
-   */
-  this.nonInt = -2;
-  this.stdInt = -1;
-
-  this.bundles = [];
-  this.modules = [];
-
-  this.bundle = {};
-  this.module = {};
-
-  /*
-   * Envornment Variables
-   */
-
-  /**
-   * setResourceTimingBufferSize
-   * For better overall production performance reducing this will save memory I suggest no less than 10
-   * Note: This is causing problems once the buffer hits because the browser doesn't keep this tidy both
-   * in FF and Chrome
-   */
-  this.setResourceTimingBufferSize = 100;
-
-  /* Timers */
-  this.startLoadTime = 0;
-  this.domLoadTime = 0;
-};
-
-var dsoConfig = new DSOConfig(true);
-
-/* The bundling and module defintions */
-
-/**
- * Non Interactive definitions
- */
-dsoConfig.bundles = [
-  {
-    threshold: dsoConfig.nonInt,
-    label: "optional", // Not sure if its needed but we'll have it for now
-    type: "initial", // Initial means we'll download respecitivly of performance (default for noinit)
-    method: "promise|element|xhr", // Load method, allowing for different object types to be loaded
-    maxMedia: false, // Determine media max (optional) (untested)
-    minMedia: false, // Determine media min (optional) (untested)
-    useragent: false, // Load based on useragent (optional) (untested)
-    // Loading our vendors (here the difference is that vendors are loaded first)
-    vendorJs: [
-      'nonInteractiveVendor.js|deferred=deferred|type="text/javascript"',
-    ],
-    vendorCss: ["nonInteractiveVendor.css"],
-    // Loading the app
-    scripts: ["nonInteractiveApp.js|deferred=deferred"],
-    styles: ["nonInteractiveStyles.css"],
-    // initialisers that will run after all has loaded (optional)
-    onload: function () {
-      // event callback after the whole bundle has loaded
-      alert("Non Interactive Loaded");
-    },
-    onscriptload: function () {}, // event callback after scripts have loaded
-    onstyleload: function () {}, // event callback after styles have loaded
-  },
-  {
-    threshold: dsoConfig.stdInt, // We can have more than one of these based on resolution and breakpoint
-    type: "inherit",
-    breakpoint: false,
-    minWidth: false,
-    maxWidth: false,
-    vendorJs: ["interactiveVendor.js"],
-    vendorCss: ["interactiveVendor.css"],
-    scripts: ["interactiveApp.js"],
-    styles: ["interactiveApp.css"],
-    onload: function () {
-      alert("Interactive Loaded");
-    },
-  },
-  {
-    threshold: 200, // Set at Kpbs I.E 200kpbs
-    type: "inherit",
-    breakpoint: false,
-    minWidth: false,
-    maxMwidth: false,
-    vendorJs: ["customThresholdVendor.js"],
-    vendorCss: ["customThresholdVendor.css"],
-    scripts: ["customThresholdApp.js"],
-    styles: ["customThresholdApp.css"],
-    onload: function () {
-      alert("Custom Threshold Loaded");
-    },
-  },
-  {
-    threshold: 500, // Hi def mode at 500kpbs
-    type: "inherit",
-    vendorJs: ["richCustomThresholdVendor.js"],
-    vendorCss: ["richCustomThresholdVendor.css"],
-    scripts: ["richCustomThresholdApp.js"],
-    styles: ["richCustomThresholdApp.css"],
-    onload: function () {
-      alert("Rich Custom Threshold Loaded");
-    },
-  },
-];
-
-/**
- * Module defintions
- */
-dsoConfig.modules = [
-  {
-    scripts: ['/build/sw_cache.js|deferred="deferred"|type="text/javascript"'],
-    onload: function () {
-      /* Serviceworker config or importer goes here */
-      return true;
-    },
-  },
-  {
-    scripts: ["lazyLoader.js"],
-    styles: ["lazyStyle.css"],
-    onload: function () {},
-  },
-];
-
-/* End of bundling and module defintions */
-
-if (dsoConfig.debug) {
-  dsoConfig.startLoadTime = new Date().getTime();
-
-  console.log("Debug: true");
-
-  document.addEventListener("DOMContentLoaded", function () {
-    dsoConfig.domLoadTime = new Date().getTime();
-    console.log(
-      "DOMContentLoaded: " +
-        (dsoConfig.domLoadTime - dsoConfig.startLoadTime) +
-        "ms"
-    );
-  });
-}
-
-if (
-  typeof dsoConfig.setResourceTimingBufferSize !== undefined &&
-  typeof performance.setResourceTimingBufferSize === "function"
-);
-performance.setResourceTimingBufferSize(dsoConfig.setResourceTimingBufferSize);
-
-/**
- * @constructor DSOPing()
- */
-var DSOPing = function () {
-  // Every pingInterval we will perform the ping (default 30secs)
-  this.pingInterval = false;
-
-  // The network performance of the last ping test (do not modify)
-  this.pingKbps = -1;
-
-  // Ping configuration
-  this.pingUrl =
-    "https://raw.githubusercontent.com/jamesbiv/device-streaming-object-loader/master/src/ping.png";
-
-  /**
-   * Only used for browsers that do not support transferSize (Safari).
-   * Tip make sure it matches the size of the ping object further,
-   * Further a drawback to this method is that there maybe a few octets
-   * above or below that get sent during transmission that may cause minor inacuracy
-   */
-  this.pingPayloadSize = 3008;
-
-  this.pingBuffer = [];
-  this.pingBufferKpbs = [];
-
-  this.pingBufferInc = 0;
-  this.pingBufferMax = 5;
-};
-
-/**
- * @name DSOPing.prototype.ping
- * @param {function() => void} callback
- * @description DSO Ping tool to determine network speed
- * @returns boolean
- *
- * @notes We need to watch memory here as the network performance object will continue to increase even
- *        though we are redefining the Image object with the the range for 5 images, further to note,
- *        each ping is no more than 1-2kb respecitivly
- *
- *        Note: We need to test the backward compatability for ping.
- *        Note II: Create API an reference for ping to be used
- */
-DSOPing.prototype.ping = function (callback) {
-  if (dsoConfig.debug) {
-    console.log("Ping?");
-  }
-
-  if (this.pingBufferInc > this.pingBufferMax) {
-    this.pingBufferInc = 0;
-  }
-
-  var rand = Math.random().toString(36).substr(2, 10).toLowerCase();
-
-  this.pingBuffer[this.pingBufferInc] = new Image();
-  this.pingBuffer[this.pingBufferInc].src = this.pingUrl + "?=" + rand;
-
-  if (!this.performanceEnabled || typeof performance !== "undefined") {
-    var fetchStart = new Date().getTime();
-  }
-
-  this.pingBuffer[this.pingBufferInc].onload = function () {
-    if (dsoConfig.debug) {
-      console.log("Pong!");
-    }
-    var transferTime;
-    var transferSize;
-
-    if (!this.performanceEnabled || typeof performance !== "undefined") {
-      var responseEnd = new Date().getTime();
-
-      transferTime = (responseEnd - fetchStart) / 1000;
-      transferSize = this.pingPayloadSize;
-    } else {
-      var entries = performance.getEntriesByName(this.pingUrl + "?=" + rand);
-      var lastEntry = entries[entries.length - 1];
-
-      transferTime = (lastEntry.responseEnd - lastEntry.fetchStart) / 1000;
-
-      if ("transferSize" in lastEntry) {
-        transferSize = lastEntry.transferSize;
-      } else {
-        transferSize = this.pingPayloadSize;
-      }
-    }
-
-    // To kpbs a further 1024 for mbps
-    this.pingBufferKpbs[this.pingBufferInc] =
-      (transferSize * 8) / transferTime / 1024;
-
-    // Save to the DSO
-    this.pingKbps = this.pingBufferKpbs[this.pingBufferInc];
-
-    if (dsoConfig.debug) {
-      console.log(this.pingKbps);
-    }
-
-    if (typeof callback !== "undefined" && typeof callback === "function") {
-      callback();
-    }
-  }.bind(this);
-
-  this.pingBufferInc++;
-
-  if (this.pingInterval) {
-    setTimeout(
-      function () {
-        this.ping();
-      }.bind(this),
-      this.pingInterval
-    );
-  }
-
-  return true;
-};
-
-if (dsoConfig.ping) {
-  var dsoPing = new DSOPing();
-  dsoPing.ping();
-}
-
-/* DSO loading routeens */
-var DSOLoader = function () {
   this.body = document.body;
 
   this.bundleScripts = [];
@@ -347,11 +67,11 @@ var DSOLoader = function () {
 /**
  * @name DSOLoader.prototype.loadObjectByElement
  * @param {string} type
- * @param {} objectElement
+ * @param {object} objectElement
  * @param {string} id
  * @param {function () => void} success
  * @param {function () => void} error
- * @returns
+ * @returns object
  */
 DSOLoader.prototype.loadObjectByElement = function (
   type,
@@ -361,8 +81,8 @@ DSOLoader.prototype.loadObjectByElement = function (
   error
 ) {
   if (
-    typeof this.elements[type] === "undefined" ||
-    typeof objectElement === "undefined"
+    typeof this.elements[type] !== "object" ||
+    typeof objectElement !== "object"
   ) {
     return null;
   }
@@ -373,23 +93,22 @@ DSOLoader.prototype.loadObjectByElement = function (
 
   element.setAttribute(link, objectElement.file);
 
-  if (typeof id === "string" || id instanceof String) {
-    //element.setAttribute('id', id);
-  }
+  //if (typeof id === "string" || id instanceof String) {
+  //  element.setAttribute('id', id);
+  //}
 
   Object.keys(attributes).forEach(function (key) {
     element.setAttribute(key, attributes[key]);
   });
 
   if (
-    typeof objectElement.attributes !== "undefined" &&
-    (typeof objectElement.attributes === "string" ||
-      objectElement.attributes instanceof String)
+    typeof objectElement.attributes === "string" &&
+    objectElement.attributes.length > 1
   ) {
     var objectAttributes = objectElement.attributes.split("|");
   }
 
-  if (typeof objectAttributes !== "undefined" && objectAttributes.length > 1) {
+  if (typeof objectAttributes === "object" && objectAttributes.length > 0) {
     for (
       var objectAttribute = 0;
       objectAttribute < objectAttributes.length;
@@ -446,9 +165,10 @@ DSOLoader.prototype.createLoadObjects = function (
 
   for (var inputEntry = 0; input.length > inputEntry; inputEntry++) {
     if (
-      typeof input[inputEntry].scripts !== "undefined" &&
-      typeof input[inputEntry].accepted !== "undefined" &&
-      input[inputEntry].accepted === true
+      typeof input[inputEntry].scripts === "object" &&
+      typeof input[inputEntry].accepted === "boolean" &&
+      input[inputEntry].accepted === true &&
+      input[inputEntry].scripts.length > 0
     ) {
       for (
         var inputScriptEntry = 0;
@@ -471,7 +191,10 @@ DSOLoader.prototype.createLoadObjects = function (
           }
         }
 
-        if (this.archivedScripts.length > 0) {
+        if (
+          typeof this.archivedScripts === "object" &&
+          this.archivedScripts.length > 0
+        ) {
           for (
             var archivedScriptEntry = 0;
             this.archivedScripts.length > archivedScriptEntry;
@@ -501,8 +224,10 @@ DSOLoader.prototype.createLoadObjects = function (
     }
 
     if (
-      typeof input[inputEntry].styles !== "undefined" &&
-      typeof input[inputEntry].accepted !== "undefined"
+      typeof input[inputEntry].styles === "object" &&
+      typeof input[inputEntry].accepted === "boolean" &&
+      input[inputEntry].accepted === true &&
+      input[inputEntry].styles.length > 0
     ) {
       for (
         var inputStyleEntry = 0;
@@ -523,7 +248,10 @@ DSOLoader.prototype.createLoadObjects = function (
           }
         }
 
-        if (this.archivedStyles.length > 0) {
+        if (
+          typeof this.archivedStyles === "object" &&
+          this.archivedStyles.length > 0
+        ) {
           for (
             var archivedStyleEntry = 0;
             this.archivedStyles.length > archivedStyleEntry;
@@ -565,7 +293,7 @@ DSOLoader.prototype.createLoadObjects = function (
  */
 DSOLoader.prototype.createModuleLoadObjects = function () {
   return this.createLoadObjects(
-    dsoConfig.modules,
+    this.dsoConfig.modules,
     this.moduleScripts,
     this.moduleStyles,
     "moduleids"
@@ -586,22 +314,24 @@ DSOLoader.prototype.createBundleLoadObjects = function (
   // Clear variables before use
   for (
     bundleConfig = 0;
-    dsoConfig.bundles.length > bundleConfig;
+    this.dsoConfig.bundles.length > bundleConfig;
     bundleConfig++
   ) {
-    delete dsoConfig.bundles[bundleConfig].accepted;
-    delete dsoConfig.bundles[bundleConfig].unaccepted;
+    delete this.dsoConfig.bundles[bundleConfig].accepted;
+    delete this.dsoConfig.bundles[bundleConfig].unaccepted;
   }
 
   var kbps =
-    typeof dsoPing !== "undefined" ? Number(dsoPing.pingKbps.toFixed(2)) : -1;
+    typeof this.dsoPing === "object"
+      ? Number(this.dsoPing.pingKbps.toFixed(2))
+      : -1;
 
   for (
     var configBundle = 0;
-    dsoConfig.bundles.length > configBundle;
+    this.dsoConfig.bundles.length > configBundle;
     configBundle++
   ) {
-    if (typeof dsoConfig.bundles[configBundle].loaded === "undefined") {
+    if (typeof this.dsoConfig.bundles[configBundle].loaded === "undefined") {
       var pass = true;
       var accepted = false;
 
@@ -609,17 +339,19 @@ DSOLoader.prototype.createBundleLoadObjects = function (
        * We should make it so just one of the following is set but for now we compare for the two togeather
        */
       if (
-        dsoConfig.bundles[configBundle].minMedia > 0 &&
-        dsoConfig.bundles[configBundle].maxMedia > 0
+        this.dsoConfig.bundles[configBundle].minMedia > 0 &&
+        this.dsoConfig.bundles[configBundle].maxMedia > 0
       ) {
         if (
           !(
-            this.viewportWidth >= dsoConfig.bundles[configBundle].minMedia &&
-            this.viewportWidth <= dsoConfig.bundles[configBundle].maxMedia
+            this.viewportWidth >=
+              this.dsoConfig.bundles[configBundle].minMedia &&
+            this.viewportWidth <= this.dsoConfig.bundles[configBundle].maxMedia
           ) ||
           !(
-            this.viewportHeight >= dsoConfig.bundles[configBundle].minMedia &&
-            this.viewportHeight <= dsoConfig.bundles[configBundle].maxMedia
+            this.viewportHeight >=
+              this.dsoConfig.bundles[configBundle].minMedia &&
+            this.viewportHeight <= this.dsoConfig.bundles[configBundle].maxMedia
           )
         ) {
           pass = false;
@@ -630,10 +362,11 @@ DSOLoader.prototype.createBundleLoadObjects = function (
        * Filter out useragents that dont match (untested)
        * This feature can be expanded using the globals found under navigator such as platform
        */
-      if (typeof dsoConfig.bundles[configBundle].useragent === "string") {
+      if (typeof this.dsoConfig.bundles[configBundle].useragent === "string") {
         if (
-          dsoConfig.bundles[configBundle].useragent.test(this.useragent) ===
-          false
+          this.dsoConfig.bundles[configBundle].useragent.test(
+            this.useragent
+          ) === false
         ) {
           pass = false;
         }
@@ -643,14 +376,16 @@ DSOLoader.prototype.createBundleLoadObjects = function (
         /* Fallover mode will just load the non-interactive bundles */
         if (
           fallover === true &&
-          dsoConfig.bundles[configBundle].threshold === dsoConfig.nonInt
+          this.dsoConfig.bundles[configBundle].threshold ===
+            this.dsoConfig.nonInt
         ) {
           accepted = true;
           /* Load only interactive modules */
         } else if (
           stdInt === true &&
-          dsoConfig.bundles[configBundle].threshold === dsoConfig.stdInt &&
-          dsoConfig.threshold <= kbps
+          this.dsoConfig.bundles[configBundle].threshold ===
+            this.dsoConfig.stdInt &&
+          this.dsoConfig.threshold <= kbps
         ) {
           accepted = true;
           /**
@@ -658,22 +393,26 @@ DSOLoader.prototype.createBundleLoadObjects = function (
            * TODO: We should set this so no ping and no stream loads everything and stream with no ping
            * loads non interactive andthen interactive later
            */
-        } else if (typeof dsoPing === "undefined") {
+        } else if (typeof this.dsoPing === "undefined") {
           accepted = true;
           /* Otherwise load based on ping priority */
         } else {
-          if (dsoConfig.bundles[configBundle].threshold === dsoConfig.nonInt) {
-            accepted = true;
-          }
           if (
-            dsoConfig.bundles[configBundle].threshold === dsoConfig.stdInt &&
-            dsoConfig.threshold <= kbps
+            this.dsoConfig.bundles[configBundle].threshold ===
+            this.dsoConfig.nonInt
           ) {
             accepted = true;
           }
           if (
-            dsoConfig.bundles[configBundle].threshold > 0 &&
-            dsoConfig.bundles[configBundle].threshold <= kbps
+            this.dsoConfig.bundles[configBundle].threshold ===
+              this.dsoConfig.stdInt &&
+            this.dsoConfig.threshold <= kbps
+          ) {
+            accepted = true;
+          }
+          if (
+            this.dsoConfig.bundles[configBundle].threshold > 0 &&
+            this.dsoConfig.bundles[configBundle].threshold <= kbps
           ) {
             accepted = true;
           }
@@ -681,35 +420,35 @@ DSOLoader.prototype.createBundleLoadObjects = function (
       }
 
       if (accepted === true) {
-        if (dsoConfig.debug) {
-          console.log(dsoConfig.bundles[configBundle]);
+        if (this.debug) {
+          console.log(this.dsoConfig.bundles[configBundle]);
           console.log("Accepted bundle");
         }
         if (
-          typeof dsoConfig.bundles[configBundle].type !== "undefined" &&
-          dsoConfig.bundles[configBundle].type === "inherit"
+          typeof this.dsoConfig.bundles[configBundle].type !== "undefined" &&
+          this.dsoConfig.bundles[configBundle].type === "inherit"
         ) {
-          dsoConfig.bundles[configBundle].accepted = true;
+          this.dsoConfig.bundles[configBundle].accepted = true;
         } else if (
-          typeof dsoConfig.bundles[configBundle].type !== "undefined" &&
-          dsoConfig.bundles[configBundle].type === "initial"
+          typeof this.dsoConfig.bundles[configBundle].type !== "undefined" &&
+          this.dsoConfig.bundles[configBundle].type === "initial"
         ) {
           // clear and start allover
           for (
             let emptyConfigBundle = 0;
-            dsoConfig.bundles.length > emptyConfigBundle;
+            this.dsoConfig.bundles.length > emptyConfigBundle;
             emptyConfigBundle++
           ) {
-            delete dsoConfig.bundles[emptyConfigBundle].accepted;
+            delete this.dsoConfig.bundles[emptyConfigBundle].accepted;
           }
-          dsoConfig.bundles[configBundle].accepted = true;
+          this.dsoConfig.bundles[configBundle].accepted = true;
         }
       } else {
-        if (dsoConfig.debug) {
-          console.log(dsoConfig.bundles[configBundle]);
+        if (this.debug) {
+          console.log(this.dsoConfig.bundles[configBundle]);
           console.log("Unaccepted bundle");
         }
-        dsoConfig.bundles[configBundle].unaccepted = true;
+        this.dsoConfig.bundles[configBundle].unaccepted = true;
       }
     }
   }
@@ -718,19 +457,24 @@ DSOLoader.prototype.createBundleLoadObjects = function (
    * If stream mode is set let's check the current set of bundles and load the next volly of bundles if needed
    * Note: this may become recursive in the future to account for custom thresholds after interactive but
    * for now we stop at just interactive mode defined under DSOLoader.prototype.loadInteractive() */
-  if (dsoConfig.stream) {
+  if (this.dsoConfig.stream) {
     var interactive = true;
     var bundleLength = 0;
 
     for (
       var bundleConfig = 0;
-      dsoConfig.bundles.length > bundleConfig;
+      this.dsoConfig.bundles.length > bundleConfig;
       bundleConfig++
     ) {
-      if (typeof dsoConfig.bundles[bundleConfig].accepted !== "undefined") {
+      if (
+        typeof this.dsoConfig.bundles[bundleConfig].accepted !== "undefined"
+      ) {
         bundleLength++;
 
-        if (dsoConfig.bundles[bundleConfig].threshold !== dsoConfig.nonInt) {
+        if (
+          this.dsoConfig.bundles[bundleConfig].threshold !==
+          this.dsoConfig.nonInt
+        ) {
           interactive = false;
         }
       }
@@ -739,12 +483,14 @@ DSOLoader.prototype.createBundleLoadObjects = function (
     if (interactive === true && bundleLength > 0) {
       for (
         bundleConfig = 0;
-        dsoConfig.bundles.length > bundleConfig;
+        this.dsoConfig.bundles.length > bundleConfig;
         bundleConfig++
       ) {
-        if (typeof dsoConfig.bundles[bundleConfig].accepted !== "undefined") {
-          dsoConfig.bundles[bundleConfig]._onload = function () {
-            dsoLoader.loadInteractive(bundleLength);
+        if (
+          typeof this.dsoConfig.bundles[bundleConfig].accepted !== "undefined"
+        ) {
+          this.dsoConfig.bundles[bundleConfig]._onload = function () {
+            this.loadInteractive(bundleLength);
           };
         }
       }
@@ -752,7 +498,7 @@ DSOLoader.prototype.createBundleLoadObjects = function (
   }
 
   return this.createLoadObjects(
-    dsoConfig.bundles,
+    this.dsoConfig.bundles,
     this.bundleScripts,
     this.bundleStyles,
     "bundleids"
@@ -762,19 +508,19 @@ DSOLoader.prototype.createBundleLoadObjects = function (
 /**
  * @name DSOLoader.prototype.loadInteractive
  * @param {boolean} count
- * @returns
+ * @returns void
  *
  * @notes We need to create an API reference for this function.
  *        Note: The counter allows for all bundles to be loaded, we should make it so we can
- *         dedicate its own variable to each group but for now we'll just rely on dsoLoader.liTally
+ *         dedicate its own variable to each group but for now we'll just rely on this.liTally
  */
 DSOLoader.prototype.loadInteractive = function (count = false) {
   var execute = false;
 
   if (count) {
-    dsoLoader.liTally++;
-    if (dsoLoader.liTally === count) {
-      dsoLoader.liTally = 0;
+    this.liTally++;
+    if (this.liTally === count) {
+      this.liTally = 0;
       execute = true;
     }
   } else {
@@ -785,18 +531,18 @@ DSOLoader.prototype.loadInteractive = function (count = false) {
     /* Note that simply reloading createBundleHierarchy which should filter out any of the already loaded bundles
      * What needs to happen here is something different, we need to set a mode that forces only interactive
      * to load leaving the upper thresholds */
-    if (dsoLoader.createBundleLoadObjects(false, true)) {
-      dsoLoader.loadBundles();
+    if (this.createBundleLoadObjects(false, true)) {
+      this.loadBundles();
     }
   }
 };
 
 /**
  * @name DSOLoader.prototype.checkObjectStatus
- * @param {*} object
- * @param {*} outputScripts
- * @param {*} outputStyles
- * @param {*} ids
+ * @param {object} object
+ * @param {object[]} outputScripts
+ * @param {object[]} outputStyles
+ * @param {string} ids
  * @returns boolean
  * @description Used to check the callback of an object being loader
  */
@@ -813,11 +559,14 @@ DSOLoader.prototype.checkObjectStatus = function (
   for (var objectEntry = 0; object.length > objectEntry; objectEntry++) {
     var id = objectEntry;
 
+    var vendorScripts = object[objectEntry].vendorJs;
     var scripts = object[objectEntry].scripts;
+
+    var vendorStyles = object[objectEntry].vendorCss;
     var styles = object[objectEntry].styles;
 
     if (
-      typeof scripts !== "undefined" &&
+      typeof scripts === "object" &&
       typeof object[objectEntry].scriptsLoaded === "undefined"
     ) {
       var scriptsTally = 0;
@@ -846,16 +595,10 @@ DSOLoader.prototype.checkObjectStatus = function (
         if (scripts.length - scriptsTallyOffset <= scriptsTally) {
           object[objectEntry].scriptsLoaded = true;
 
-          if (
-            typeof object[objectEntry].onscriptload !== "undefined" &&
-            typeof object[objectEntry].onscriptload === "function"
-          ) {
+          if (typeof object[objectEntry].onscriptload === "function") {
             object[objectEntry].onscriptload();
           }
-          if (
-            typeof object[objectEntry]._onscriptload !== "undefined" &&
-            typeof object[objectEntry]._onscriptload === "function"
-          ) {
+          if (typeof object[objectEntry]._onscriptload === "function") {
             object[objectEntry]._onscriptload();
           }
         }
@@ -863,7 +606,7 @@ DSOLoader.prototype.checkObjectStatus = function (
     }
 
     if (
-      typeof styles !== "undefined" &&
+      typeof styles === "object" &&
       typeof object[objectEntry].stylesLoaded === "undefined"
     ) {
       var stylesTally = 0;
@@ -906,10 +649,10 @@ DSOLoader.prototype.checkObjectStatus = function (
     // All scripts and styles have loaded
     if (typeof object[objectEntry].loaded === "undefined") {
       if (
-        typeof object[objectEntry].scriptsLoaded !== "undefined" &&
-        object[objectEntry].scriptsLoaded == true &&
-        typeof object[objectEntry].stylesLoaded !== "undefined" &&
-        object[objectEntry].stylesLoaded == true
+        typeof object[objectEntry].scriptsLoaded === "boolean" &&
+        object[objectEntry].scriptsLoaded &&
+        typeof object[objectEntry].stylesLoaded === "boolean" &&
+        object[objectEntry].stylesLoaded
       ) {
         object[objectEntry].loaded = true;
 
@@ -924,10 +667,10 @@ DSOLoader.prototype.checkObjectStatus = function (
     }
 
     switch (object[objectEntry].threshold) {
-      case dsoConfig.nonInt:
+      case this.dsoConfig.nonInt:
         if (
-          typeof object[objectEntry].loaded !== "undefined" &&
-          object[objectEntry].loaded == true
+          typeof object[objectEntry].loaded === "boolean" &&
+          object[objectEntry].loaded
         ) {
           nonInteractive = true;
         } else {
@@ -935,10 +678,10 @@ DSOLoader.prototype.checkObjectStatus = function (
         }
         break;
 
-      case dsoConfig.stdInt:
+      case this.dsoConfig.stdInt:
         if (
-          typeof object[objectEntry].loaded !== "undefined" &&
-          object[objectEntry].loaded == true
+          typeof object[objectEntry].loaded === "boolean" &&
+          object[objectEntry].loaded
         ) {
           stdInteractive = true;
         } else {
@@ -948,8 +691,8 @@ DSOLoader.prototype.checkObjectStatus = function (
 
       default:
         if (
-          typeof object[objectEntry].loaded !== "undefined" &&
-          object[objectEntry].loaded == true
+          typeof object[objectEntry].loaded === "boolean" &&
+          object[objectEntry].loaded
         ) {
           customThreshold = true;
         } else {
@@ -960,23 +703,32 @@ DSOLoader.prototype.checkObjectStatus = function (
   }
 
   // Group Callbacks
-  if (nonInteractive === true && dsoConfig.onnonInteractiveLoaded !== true) {
-    if (typeof dsoConfig.onnonInteractiveLoad === "function") {
-      dsoConfig.onnonInteractiveLoad();
+  if (
+    nonInteractive === true &&
+    this.dsoConfig.onnonInteractiveLoaded !== true
+  ) {
+    if (typeof this.dsoConfig.onnonInteractiveLoad === "function") {
+      this.dsoConfig.onnonInteractiveLoad();
     }
-    dsoConfig.onnonInteractiveLoaded = true;
+    this.dsoConfig.onnonInteractiveLoaded = true;
   }
-  if (stdInteractive === true && dsoConfig.onInteractiveLoadLoaded !== true) {
-    if (typeof dsoConfig.onnonInteractiveLoad === "function") {
-      dsoConfig.onInteractiveLoad();
+  if (
+    stdInteractive === true &&
+    this.dsoConfig.onInteractiveLoadLoaded !== true
+  ) {
+    if (typeof this.dsoConfig.onnonInteractiveLoad === "function") {
+      this.dsoConfig.onInteractiveLoad();
     }
-    dsoConfig.onInteractiveLoadLoaded = true;
+    this.dsoConfig.onInteractiveLoadLoaded = true;
   }
-  if (customThreshold === true && dsoConfig.onCustomThresholdLoaded !== true) {
-    if (typeof dsoConfig.onCustomThresholdLoaded === "function") {
-      dsoConfig.onCustomThresholdLoaded();
+  if (
+    customThreshold === true &&
+    this.dsoConfig.onCustomThresholdLoaded !== true
+  ) {
+    if (typeof this.dsoConfig.onCustomThresholdLoaded === "function") {
+      this.dsoConfig.onCustomThresholdLoaded();
     }
-    dsoConfig.onCustomThresholdLoaded = true;
+    this.dsoConfig.onCustomThresholdLoaded = true;
   }
 
   return true;
@@ -984,11 +736,11 @@ DSOLoader.prototype.checkObjectStatus = function (
 
 /**
  * @name DSOLoader.prototype.checkModuleStatus
- * @returns
+ * @returns boolean
  */
 DSOLoader.prototype.checkModuleStatus = function () {
   return this.checkObjectStatus(
-    dsoConfig.modules,
+    this.dsoConfig.modules,
     this.moduleScripts,
     this.moduleStyles,
     "moduleids"
@@ -997,11 +749,11 @@ DSOLoader.prototype.checkModuleStatus = function () {
 
 /**
  * @name DSOLoader.prototype.checkBundleStatus
- * @returns
+ * @returns boolean
  */
 DSOLoader.prototype.checkBundleStatus = function () {
   return this.checkObjectStatus(
-    dsoConfig.bundles,
+    this.dsoConfig.bundles,
     this.bundleScripts,
     this.bundleStyles,
     "bundleids"
@@ -1009,8 +761,8 @@ DSOLoader.prototype.checkBundleStatus = function () {
 };
 
 /**
- * @name DSOLoader.prototype.checkBundleStatus
- * @returns
+ * @name DSOLoader.prototype.loadModules
+ * @returns void
  */
 DSOLoader.prototype.loadModules = function () {
   var scripts = document.createElement("div");
@@ -1030,12 +782,13 @@ DSOLoader.prototype.loadModules = function () {
     if (script) {
       script.onload = script.onreadystatechange = function () {
         moduleScript.load = true;
-        dsoLoader.checkModuleStatus();
-      };
+        this.checkModuleStatus();
+      }.bind(this);
+
       script.onerror = function () {
         moduleScript.error = true;
-        dsoLoader.checkModuleStatus();
-      };
+        this.checkModuleStatus();
+      }.bind(this);
 
       scripts.appendChild(script);
     }
@@ -1052,12 +805,13 @@ DSOLoader.prototype.loadModules = function () {
     if (style) {
       style.onload = style.onreadystatechange = function () {
         moduleStyle.loaded = true;
-        dsoLoader.checkModuleStatus();
-      };
+        this.checkModuleStatus();
+      }.bind(this);
+
       style.onerror = function () {
         moduleStyle.error = true;
-        dsoLoader.checkModuleStatus();
-      };
+        this.checkModuleStatus();
+      }.bind(this);
 
       styles.appendChild(style);
     }
@@ -1069,7 +823,7 @@ DSOLoader.prototype.loadModules = function () {
 
 /**
  * @name DSOLoader.prototype.loadBundles
- * @returns
+ * @returns void
  * @description Logic for the load process
  */
 DSOLoader.prototype.loadBundles = function () {
@@ -1090,13 +844,13 @@ DSOLoader.prototype.loadBundles = function () {
     if (script) {
       script.onload = script.onreadystatechange = function () {
         bundleScript.loaded = true;
-        dsoLoader.checkBundleStatus();
-      };
+        this.checkBundleStatus();
+      }.bind(this);
 
       script.onerror = function () {
         bundleScript.error = true;
-        dsoLoader.checkBundleStatus();
-      };
+        this.checkBundleStatus();
+      }.bind(this);
 
       scripts.appendChild(script);
     }
@@ -1113,12 +867,13 @@ DSOLoader.prototype.loadBundles = function () {
     if (style) {
       style.onload = style.onreadystatechange = function () {
         bundleStyle.loaded = true;
-        dsoLoader.checkBundleStatus();
-      };
+        this.checkBundleStatus();
+      }.bind(this);
+
       style.onerror = function () {
         bundleStyle.error = true;
-        dsoLoader.checkBundleStatus();
-      };
+        this.checkBundleStatus();
+      }.bind(this);
 
       styles.appendChild(style);
     }
@@ -1127,136 +882,3 @@ DSOLoader.prototype.loadBundles = function () {
   document.body.appendChild(scripts);
   document.body.appendChild(styles);
 };
-
-var dsoLoader = new DSOLoader();
-
-/**
- * @name dsoModules
- * @returns boolean
- */
-var dsoModules = function () {
-  if (dsoConfig.debug) {
-    console.log("Running Modules ...");
-  }
-
-  /* dsoLoader.createModuleLoadObjects() */
-  dsoLoader.createModuleLoadObjects();
-
-  /* dsoLoader.loadModules() */
-  dsoLoader.loadModules();
-
-  return true;
-};
-
-/**
- * @name dsoInit
- * @param {boolean} fallover
- * @returns boolean
- */
-var dsoInit = function (fallover = false) {
-  if (dsoConfig.debug) {
-    if (fallover === true) {
-      console.log("Running Init ... [Fallover Mode!]");
-    } else {
-      console.log("Running Init ...");
-    }
-  }
-
-  if (typeof dsoPing !== "undefined") {
-    // Last kbps value
-    var kbps = Number(dsoPing.pingKbps.toFixed(2));
-
-    console.log("Current Kpbs: " + kbps);
-    console.log("Performance Output");
-    console.log(performance);
-    console.log(performance.getEntriesByType("resource"));
-
-    document.getElementById("kbpsOutput").innerHTML = kbps;
-    document.getElementById("mbpsOutput").innerHTML = parseFloat(
-      Math.round((kbps / 1000) * 100) / 100
-    ).toFixed(2);
-    document.getElementById("resourceOutput").innerHTML =
-      dsoPing.pingPayloadSize;
-  }
-
-  /**
-   * DSOModules
-   * Maybe we can put this in the main thread, I found performance improvements keeping it here for now though
-   */
-  dsoModules();
-
-  dsoLoader.createBundleLoadObjects(fallover);
-  dsoLoader.loadBundles();
-
-  // If we are in fallover mode we try to ping one more time but this time we'll use a callback
-  if (dsoConfig.ping && fallover === true) {
-    dsoPing.ping(function () {
-      dsoLoader.createBundleLoadObjects();
-      dsoLoader.loadBundles();
-    });
-  }
-
-  return true;
-};
-
-if (dsoConfig.ping) {
-  // Run when the first ping result comes in, otherwise fallover
-  var dsoInitPollFrequency = 1; // The rate at which will poll init
-  var dsoInitPollFallover = 1000;
-  var dsoInitPollClock = 0;
-
-  var dsoInitPoll = function () {};
-
-  if (
-    typeof Promise !== "undefined" &&
-    Promise.toString().indexOf("[native code]") !== -1
-  ) {
-    // Sleep function
-    var dsoSleep = function (time) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, time);
-      });
-    };
-
-    dsoInitPoll = async function () {
-      dsoInitPollClock += dsoInitPollFrequency;
-      await dsoSleep(dsoInitPollFrequency);
-
-      if (dsoPing.pingKbps > 0) {
-        dsoInit();
-      } else if (dsoInitPollClock > dsoInitPollFallover) {
-        dsoInit(true);
-      } else {
-        dsoInitPoll();
-      }
-    };
-  } else {
-    if (dsoConfig.debug) {
-      console.log("Promises: false");
-    }
-
-    dsoInitPoll = function () {
-      setTimeout(function () {
-        dsoInitPollClock += dsoInitPollFrequency;
-
-        if (dsoConfig.pingKbps > 0) {
-          dsoInit();
-        } else if (dsoInitPollClock > dsoInitPollFallover) {
-          dsoInit(true);
-        } else {
-          dsoInitPoll();
-        }
-      }, dsoInitPollFrequency);
-    };
-  }
-
-  dsoInitPoll();
-} else {
-  dsoInit();
-}
-
-if (dsoConfig.debug && typeof dsoInitPollClock) {
-  console.log("Poll clock: " + dsoInitPollClock);
-}

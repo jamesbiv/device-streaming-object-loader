@@ -29,7 +29,7 @@
 
 	<img src="https://avatars2.githubusercontent.com/u/16272529" alt="" width="200" height="200" />
 
-	<p>Last Kbps: <span id="kbpsOutput">0.00</span> (<span id="mbpsOutput">0.00</span> Mbps)</p>
+	<p>Last KBps: <span id="kbpsOutput">0.00</span> (<span id="mbpsOutput">0.00</span> MBps)</p>
 	<p>TransferSize: <span id="resourceOutput">0</span></p>
 
 	<h2>Console Log</h2>
@@ -79,9 +79,9 @@
 		<link href="" type="text/css" rel="stylesheet" />
 	</noscript>
 
-	<!-- For now this is a nonblocking include, for production builds dsoLoader.js needs to be 
-	compressed and inserted as inline in order to ensure it is a part of the inital payload -->
-	<script src="dsoLoader.js" type="text/javascript"></script>
+	<!-- For now this is a nonblocking include, for production builds dsoLoader.js needs 
+	to be inserted as inline in order to ensure it is a part of the inital payload -->
+	<script src="../dist/dsoLoader.js" type="text/javascript"></script>
 </body>
 
 </html>

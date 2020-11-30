@@ -8,11 +8,11 @@
 
 In line with Progressive Web Application (PWA) technologies. I present the Device Streaming Object Library (DSO Loader) as an all-in-one resource and performance management environment for dynamic code and resource delivery.
 
-DSO Loader is designed to be a lightweight service that tracks the networks' link performance in order to provide the most efficient and effective quality of user experience (QoUE).
+DSO Loader is designed to be a lightweight service that tracks the networks' link performance in order to provide the most efficient and effective Quality of User Experience (QoUE).
 
-One of the DSO Loader's key functions will be to as early as possible in the application's initial download phase is determine the current network speed and signal a slow or fast download rate in Kilobytes per second (Kbps) and then offer various strategies to enrich the QoUE.
+One of the DSO Loader's key functions will be to as early as possible in the application's initial download phase is determine the current network speed and signal a slow or fast download rate in KiloBytes per second (KBps) and then offer various strategies to enrich the QoUE.
 
-If the DSO Loader detects a slow Kpbs download rate, instead of downloading the entire interactive experience. DSO Loader will begin downloading the low interactive version of the site which will have reduced or no user interactive functionality. 
+If the DSO Loader detects a slow KBps download rate, instead of downloading the entire interactive experience. DSO Loader will begin downloading the low interactive version of the site which will have reduced or no user interactive functionality. 
 
 Meanwhile, the full responsive and interactive rich online experience is progressively downloaded in the background. Ideally if the connection strength is rated well, the rich experience is directly offered. Further if frameworks and libraries cross over between both states, these libraries will be shared.
 
@@ -30,7 +30,7 @@ Possible advancements in features could include modularisation, however, the mai
 
 <b>ServiceWorker event listing and frameworking</b> - The DSO Loader can allow for a global interface for device level interactions. Such features can include, structure based cache management; or push notification handlers and services.</p>
 
-<h2>DSO Loader Architecture</h2>
+<h2>DSO Loader architecture</h2>
 
 DSO Loader is broken down into the following key areas
 
@@ -73,29 +73,39 @@ The following strategies can take place if the the rate of download is not met.
 
 All object downloads should be handled in a way that allows for maximum download efficiency and reuse. Javascript/CSS libraries will be cross shared and layered allowing for reuse whenever possible.
 
-<h2>Developer Notes</h2>
+<h2>Developer notes</h2>
 
-<h3>Footprint</h3>
+Since, this project is still very much in its early stages, this lib only currently works as a bare-bones solution or as a manual implemation. This is will change as soon as the code base reaches maturity, where offering it as a practical real world solution becomes feesible.
 
-In order for the library to work the footprint needs to stay under about 50k compiled (approx).
+The eventual outcome of this project will be to maintain compatability with most popular development environments by operating as a Webpack module or plugin. Further, the aim will be to offer the ability to seemly connect with most popular front-end frameworks such as React, Angular and Vue, etc. 
 
-<h3>Initialisation Process</h3>
+<h3>Code structure semantics</h3>
+
+The DSO Loader has been built in native ES5, the reason why is because I wanted to maintain as much granular control over the code base as possible. Meanwhile, being as compatabile as possible at the time. I.E being able to support as many legacy devices and platforms without causing errors or exceptions while at the same time being able to control the footprint size as I develop.
+
+The idea of building DSO in Typescript and transpiling it down has always been something worth considering, however, I find working directly with ES5 allows me to keep an eye on payload size, which for the DSO Loader will be cruical.
+
+<h3>Payload footprint</h3>
+
+In order for the library to be affective the entire inital payload size or the First Byte payload should try to be under about 20k compiled (approx), which includes the sites AppShell and the DSO Loader. Please see my <a href="">blog article</a> discussing in depth, breaking down benchmarks and the overall <i>efficacy</i> of the footprint strategy and design.
+
+<h3>Initialisation process</h3>
 	
 Network processor performance initialisation
 
 <ul>
 	<li>Request a small data object such as a image or file.</li>
-	<li>Use the last recorded Kpbs rate to decide on bundling.</li>
+	<li>Use the last recorded KBps rate to decide on bundling.</li>
 	<li>Contine to download other bundles in the background after the inital download offering.</li>
 </ul>
 
-Init service worker and start caching (asynch)
+Request bundling based on KB/s thresholds (async)
 
-Request bundling based on Kb/s thresholds (asynch)
+Service Worker intialisation and caching (async)
 
 <ul>
-	<li>If the kbps threshold is passed load the relevant bundle in varied experience bands if needed</li>
-	<li>If the kbps threshold has falls below minimum load low interactive mode</li>
+	<li>If the KBps threshold is passed then load the relevant bundle in varied experience bands as per DSO Loader's configuration</li>
+	<li>If the KBps threshold has falls below minimum level then load low interactive mode</li>
 </ul>
 
 <h3>Listeners</h3>
@@ -108,3 +118,15 @@ Request bundling based on Kb/s thresholds (asynch)
 
 Lazy Load Bundles (scrolling)<br />
 eventHandler (onclick) loads
+
+<h3>Demo site</h3>
+
+Please see the following <a href="">demo site</a>.
+
+<h3>Use case discussion</h3>
+
+Please see the following <a href="">blog article</a> discussing use cases and implmentation semantics behind the DSO Loader.
+
+<h3>Project related enquires</h3>
+
+Feel free to contact me via email <a href="mailto:jamestbiv@gmail.com">jamestbiv@gmail.com</a> for any general related enquries or discussions.
