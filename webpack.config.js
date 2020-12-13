@@ -19,7 +19,7 @@ module.exports = {
     minimizer: [
       new TerserPlugin({
         terserOptions: {
-          ecma: undefined,
+          ecma: "es5",
           parse: {},
           compress: {},
           mangle: true, // Note `mangle.properties` is `false` by default.
@@ -37,4 +37,18 @@ module.exports = {
       }),
     ],
   },
+//  module: {
+//    rules: [
+//      {
+//        test: /\.m?js$/,
+//        exclude: /(dist)/,
+//        use: {
+//          loader: "babel-loader",
+//          options: {
+//            presets: ["@babel/preset-env"],
+//          },
+//        },
+//      },
+//    ],
+//  },
 };

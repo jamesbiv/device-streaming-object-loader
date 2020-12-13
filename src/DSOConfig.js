@@ -14,8 +14,8 @@ export var DSOConfig = function (debug = false) {
   /*
    * Mode Callbacks
    */
-  this.onnonInteractiveLoad = function () {}; // Callback
-  this.onnonInteractiveLoaded = false; // Changes to true
+  this.onNonInteractiveLoad = function () {}; // Callback
+  this.onNonInteractiveLoaded = false; // Changes to true
 
   this.onInteractiveLoad = function () {}; // Callback
   this.onInteractiveLoadLoaded = false; // Changes to true
@@ -24,7 +24,7 @@ export var DSOConfig = function (debug = false) {
   this.onCustomThresholdLoaded = false; // Changes to true
 
   /*
-   * Threshold in kpbs for interactive to non interactive (15kbps is very slow :))
+   * Threshold in KBps for interactive to non interactive (15KBps is very slow)
    */
   this.threshold = 15;
 

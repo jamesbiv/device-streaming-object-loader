@@ -165,7 +165,7 @@ var dsoInit = function (fallover = false) {
     // Last KBps value
     var kbps = Number(dsoPing.pingKbps.toFixed(2));
 
-    console.log("Current Kpbs: " + kbps);
+    console.log("Current KBps: " + kbps);
     console.log("Performance Output");
     console.log(performance);
     console.log(performance.getEntriesByType("resource"));
@@ -184,13 +184,13 @@ var dsoInit = function (fallover = false) {
    */
   dsoModules();
 
-  dsoLoader.createBundleLoadObjects(fallover);
+  dsoLoader.defineBundleAcceptance(fallover);
   dsoLoader.loadBundles();
 
   // If we are in fallover mode we try to ping one more time but this time we'll use a callback
   if (dsoConfig.ping && fallover) {
     dsoPing.ping(function () {
-      dsoLoader.createBundleLoadObjects();
+      dsoLoader.defineBundleAcceptance();
       dsoLoader.loadBundles();
     });
   }
@@ -207,7 +207,7 @@ if (dsoConfig.ping) {
   var dsoInitPoll = function () {};
 
   if (
-    typeof Promise !== "undefined" &&
+    typeof Promise === "function" &&
     Promise.toString().indexOf("[native code]") !== -1
   ) {
     // Sleep function

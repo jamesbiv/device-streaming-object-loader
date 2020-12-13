@@ -10,6 +10,7 @@ export var DSOPing = function (debug = false) {
 
   // For debugging purposes
   this.performanceEnabled = true;
+  this.xhrEnabled = true;
 
   // Every pingInterval we will perform the ping (default 30secs)
   this.pingInterval = false;
@@ -49,78 +50,91 @@ export var DSOPing = function (debug = false) {
  *        Note: We need to test the backward compatability for ping.
  *        Note II: Create API an reference for ping to be used
  */
-DSOPing.prototype.ping = function (callback) {
-  if (this.debug) {
-    console.log("Ping?");
-  }
-
-  if (this.pingBufferInc > this.pingBufferMax) {
-    this.pingBufferInc = 0;
-  }
-
-  var rand = Math.random().toString(36).substr(2, 10).toLowerCase();
-
-  this.pingBuffer[this.pingBufferInc] = new Image();
-  this.pingBuffer[this.pingBufferInc].src = this.pingUrl + "?=" + rand;
-
-  if (!this.performanceEnabled || typeof performance === "undefined") {
-    var fetchStart = new Date().getTime();
-  }
-
-  this.pingBuffer[this.pingBufferInc].onload = function (event) {
+DSOPing.prototype = {
+  ping: function (callback) {
     if (this.debug) {
-      console.log("Pong!");
+      console.log("Ping?");
     }
-    var transferTime;
-    var transferSize;
 
-    if (!this.performanceEnabled || typeof performance === "undefined") {
-      var responseEnd = new Date().getTime();
+    if (this.pingBufferInc > this.pingBufferMax) {
+      this.pingBufferInc = 0;
+    }
 
-      transferTime = (responseEnd - fetchStart) / 1000;
-      transferSize = this.pingPayloadSize;
+    var rand = Math.random().toString(36).substr(2, 10).toLowerCase();
+
+    if (this.xhrEnabled) {
+      this.pingBuffer[this.pingBufferInc] = new XMLHttpRequest();
+      this.pingBuffer[this.pingBufferInc].open(
+        "GET",
+        this.pingUrl + "?=" + rand,
+        true
+      );
+      this.pingBuffer[this.pingBufferInc].send();
     } else {
-      var entries = performance.getEntriesByName(this.pingUrl + "?=" + rand);
-      var lastEntry = entries[entries.length - 1];
+      this.pingBuffer[this.pingBufferInc] = new Image();
+      this.pingBuffer[this.pingBufferInc].src = this.pingUrl + "?=" + rand;
+    }
 
-      transferTime = (lastEntry.responseEnd - lastEntry.fetchStart) / 1000;
+    if (!this.performanceEnabled || typeof performance !== "object") {
+      var fetchStart = new Date().getTime();
+    }
 
-      if (
-        typeof lastEntry.transferSize !== "undefined" &&
-        lastEntry.transferSize > 0
-      ) {
-        transferSize = lastEntry.transferSize;
-      } else {
-        transferSize = this.pingPayloadSize;
+    this.pingBuffer[this.pingBufferInc].onload = function (event) {
+      if (this.debug) {
+        console.log("Pong!");
       }
+
+      var transferSize = event.total;
+      var transferTime;
+
+      if (!this.performanceEnabled || typeof performance !== "object") {
+        var responseEnd = new Date().getTime();
+
+        transferTime = (responseEnd - fetchStart) / 1000;
+        transferSize = transferSize || this.pingPayloadSize;
+      } else {
+        var entries = performance.getEntriesByName(this.pingUrl + "?=" + rand);
+        var lastEntry = entries[entries.length - 1];
+
+        transferTime = (lastEntry.responseEnd - lastEntry.fetchStart) / 1000;
+
+        if (
+          typeof lastEntry.transferSize === "number" &&
+          lastEntry.transferSize > 0
+        ) {
+          transferSize = transferSize || lastEntry.transferSize;
+        } else {
+          transferSize = transferSize || this.pingPayloadSize;
+        }
+      }
+
+      // To KBps a further 1024 for MBps
+      this.pingBufferKpbs[this.pingBufferInc] =
+        (transferSize * 8) / transferTime / 1024;
+
+      // Save to the DSO
+      this.pingKbps = this.pingBufferKpbs[this.pingBufferInc];
+
+      if (this.debug) {
+        console.log(this.pingKbps);
+      }
+
+      if (typeof callback === "function") {
+        callback();
+      }
+    }.bind(this);
+
+    this.pingBufferInc++;
+
+    if (this.pingInterval) {
+      setTimeout(
+        function () {
+          this.ping();
+        }.bind(this),
+        this.pingInterval
+      );
     }
 
-    // To KBps a further 1024 for MBps
-    this.pingBufferKpbs[this.pingBufferInc] =
-      (transferSize * 8) / transferTime / 1024;
-
-    // Save to the DSO
-    this.pingKbps = this.pingBufferKpbs[this.pingBufferInc];
-
-    if (this.debug) {
-      console.log(this.pingKbps);
-    }
-
-    if (typeof callback === "function") {
-      callback();
-    }
-  }.bind(this);
-
-  this.pingBufferInc++;
-
-  if (this.pingInterval) {
-    setTimeout(
-      function () {
-        this.ping();
-      }.bind(this),
-      this.pingInterval
-    );
-  }
-
-  return true;
+    return true;
+  },
 };
