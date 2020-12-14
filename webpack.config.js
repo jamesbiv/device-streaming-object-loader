@@ -1,18 +1,23 @@
 const CompressionPlugin = require("compression-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 
+const webpack = require('webpack');
+
 module.exports = {
   entry: {
     index: "/src/index.js",
   },
   output: {
-    filename: "dsoLoader.js",
+    filename: "dsoLoader.min.js",
     path: __dirname + "/dist",
   },
   plugins: [
     new CompressionPlugin({
       compressionOptions: { level: 1 },
     }),
+    new webpack.DefinePlugin({
+      DEBUG: JSON.stringify(true),
+    }),    
   ],
   optimization: {
     minimize: true,
@@ -27,7 +32,7 @@ module.exports = {
           // Deprecated
           output: null,
           format: null,
-          toplevel: false,
+          toplevel: true,
           nameCache: null,
           ie8: false,
           keep_classnames: false,

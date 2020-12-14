@@ -2,18 +2,11 @@
  * @constructor DSOLoader
  * @param {DSOConfig} dsoConfig
  * @param {DSOPing} dsoPing
- * @param {boolean} debug
  */
-export var DSOLoader = function (
-  dsoConfig = undefined,
-  dsoPing = undefined,
-  debug = false
-) {
+export var DSOLoader = function (dsoConfig = undefined, dsoPing = undefined) {
   /*
    * Global declarations
    */
-  this.debug = debug;
-
   this.dsoConfig = dsoConfig;
   this.dsoPing = dsoPing;
 
@@ -44,9 +37,6 @@ export var DSOLoader = function (
 
   this.archivedObjects = [];
 
-  this.archivedScripts = [];
-  this.archivedStyles = [];
-
   /* element type definitions */
   this.elements = {
     script: {
@@ -76,7 +66,7 @@ export var DSOLoader = function (
  * @returns object
  */
 DSOLoader.prototype = {
-  createObjectElement: function (type, objectElement, id, success, error) {
+  createObjectElement: function (type, objectElement) {
     if (
       typeof this.elements[type] !== "object" ||
       typeof objectElement !== "object"
@@ -89,10 +79,6 @@ DSOLoader.prototype = {
     var link = this.elements[type].link;
 
     element.setAttribute(link, objectElement.file);
-
-    if (typeof id === "string") {
-      element.setAttribute("id", id);
-    }
 
     Object.keys(attributes).forEach(function (key) {
       element.setAttribute(key, attributes[key]);
@@ -160,7 +146,7 @@ DSOLoader.prototype = {
           typeof input[inputEntry][entryType.name] === "object" &&
           typeof input[inputEntry].accepted === "boolean" &&
           input[inputEntry][entryType.name].length > 0 &&
-          input[inputEntry].accepted === true
+          input[inputEntry].accepted
         ) {
           for (
             var entry = 0;
@@ -172,17 +158,6 @@ DSOLoader.prototype = {
             );
 
             var entryFound = false;
-
-            /*for (
-              let outputScriptEntry = 0;
-              outputScripts.length > outputScriptEntry;
-              outputScriptEntry++
-            ) {
-              if (outputScripts[outputScriptEntry].file === entryString[0]) {
-                outputScripts[outputScriptEntry][ids].push(inputEntry);
-                entryFound = true;
-              }
-            }*/
 
             if (
               typeof this.archivedObjects === "object" &&
@@ -203,25 +178,21 @@ DSOLoader.prototype = {
 
             // We set the default script behavior here
             if (!entryFound) {
-              if (entryType.type === "scripts") {
-                var script = { [ids]: [] };
-                script[ids].push(inputEntry);
-                script.file = entryString[0];
-                script.attributes = entryString.slice(1).join("|");
-                script.loaded = false;
-                script.error = false;
-
-                outputScripts.push(script);
-              } else {
-                var style = { [ids]: [] };
-                style[ids].push(inputEntry);
-                style.file = entryString[0];
-                style.attributes = entryString.slice(1).join("|");
-                style.loaded = false;
-                style.error = false;
-
-                outputStyles.push(style);
-              }
+              entryType.type === "scripts"
+                ? outputScripts.push({
+                    [ids]: [inputEntry],
+                    file: entryString[0],
+                    attributes: entryString.slice(1).join("|"),
+                    loaded: false,
+                    error: false,
+                  })
+                : outputStyles.push({
+                    [ids]: [inputEntry],
+                    file: entryString[0],
+                    attributes: entryString.slice(1).join("|"),
+                    loaded: false,
+                    error: false,
+                  });
             }
           }
         }
@@ -236,6 +207,10 @@ DSOLoader.prototype = {
    * @returns
    */
   createModuleLoadObjects: function () {
+    if (DEBUG) {
+      console.log(this.dsoConfig.modules);
+    }
+
     return this.createLoadObjects(
       this.dsoConfig.modules,
       this.moduleScripts,
@@ -244,7 +219,7 @@ DSOLoader.prototype = {
     );
   },
 
-  /**verifyLoadedBundles
+  /**
    * @name DSOLoader.prototype.defineBundleAcceptance
    * @param {boolean} fallover
    * @param {boolean} stdInt
@@ -310,9 +285,7 @@ DSOLoader.prototype = {
           typeof this.dsoConfig.bundles[configBundle].userAgent === "string"
         ) {
           if (
-            this.dsoConfig.bundles[configBundle].userAgent.test(
-              this.userAgent
-            ) === false
+            !this.dsoConfig.bundles[configBundle].userAgent.test(this.userAgent)
           ) {
             pass = false;
           }
@@ -321,14 +294,14 @@ DSOLoader.prototype = {
         if (pass) {
           /* Fallover mode will just load the non-interactive bundles */
           if (
-            fallover === true &&
+            fallover &&
             this.dsoConfig.bundles[configBundle].threshold ===
               this.dsoConfig.nonInt
           ) {
             accepted = true;
             /* Load only interactive modules */
           } else if (
-            stdInt === true &&
+            stdInt &&
             this.dsoConfig.bundles[configBundle].threshold ===
               this.dsoConfig.stdInt &&
             this.dsoConfig.threshold <= kbps
@@ -365,8 +338,8 @@ DSOLoader.prototype = {
           }
         }
 
-        if (accepted === true) {
-          if (this.debug) {
+        if (accepted) {
+          if (DEBUG) {
             console.log(this.dsoConfig.bundles[configBundle]);
             console.log("Accepted bundle");
           }
@@ -390,7 +363,7 @@ DSOLoader.prototype = {
             this.dsoConfig.bundles[configBundle].accepted = true;
           }
         } else {
-          if (this.debug) {
+          if (DEBUG) {
             console.log(this.dsoConfig.bundles[configBundle]);
             console.log("Unaccepted bundle");
           }
@@ -400,9 +373,12 @@ DSOLoader.prototype = {
     }
 
     /**
-     * If stream mode is set let's check the current set of bundles and load the next volly of bundles if needed
-     * Note: this may become recursive in the future to account for custom thresholds after interactive but
-     * for now we stop at just interactive mode defined under DSOLoader.prototype.loadInteractive() */
+     * If stream is true, let's check the current set of bundles and load the next volly of bundles if needed.
+     *
+     * Note: This may become a recursive in the future to account for custom thresholds,
+     *       after interactive has loaded but for now we stop at just interactive mode
+     *       loading as defined in DSOLoader.prototype.loadInteractive()
+     */
     if (this.dsoConfig.stream) {
       var interactive = true;
       var bundleLength = 0;
@@ -413,7 +389,7 @@ DSOLoader.prototype = {
         bundleConfig++
       ) {
         if (
-          typeof this.dsoConfig.bundles[bundleConfig].accepted !== "undefined"
+          typeof this.dsoConfig.bundles[bundleConfig].accepted === "boolean"
         ) {
           bundleLength++;
           if (
@@ -425,14 +401,14 @@ DSOLoader.prototype = {
         }
       }
 
-      if (interactive === true && bundleLength > 0) {
+      if (interactive && bundleLength > 0) {
         for (
           bundleConfig = 0;
           this.dsoConfig.bundles.length > bundleConfig;
           bundleConfig++
         ) {
           if (
-            typeof this.dsoConfig.bundles[bundleConfig].accepted !== "undefined"
+            typeof this.dsoConfig.bundles[bundleConfig].accepted === "boolean"
           ) {
             this.dsoConfig.bundles[bundleConfig]._onload = function () {
               this.loadInteractive(bundleLength);
@@ -456,8 +432,9 @@ DSOLoader.prototype = {
    * @returns void
    *
    * @notes We need to create an API reference for this function.
+   *
    *        Note: The counter allows for all bundles to be loaded, we should make it so we can
-   *         dedicate its own variable to each group but for now we'll just rely on this.liTally
+   *              dedicate its own variable to each group but for now we'll just rely on this.liTally
    */
   loadInteractive: function (count = false) {
     var execute = false;
@@ -473,13 +450,39 @@ DSOLoader.prototype = {
     }
 
     if (execute) {
-      /* Note that simply reloading createBundleHierarchy which should filter out any of the already loaded bundles
+      /* Note: that simply reloading defineBundleAcceptance which should filter out any of the already loaded bundles
        * What needs to happen here is something different, we need to set a mode that forces only interactive
-       * to load leaving the upper thresholds */
+       * to load leaving only the upper thresholds */
       if (this.defineBundleAcceptance(false, true)) {
         this.loadBundles();
       }
     }
+  },
+
+  /**
+   * @name DSOLoader.prototype.checkModuleStatus
+   * @returns boolean
+   */
+  checkModuleStatus: function () {
+    return this.checkObjectStatus(
+      this.dsoConfig.modules,
+      this.moduleScripts,
+      this.moduleStyles,
+      "moduleids"
+    );
+  },
+
+  /**
+   * @name DSOLoader.prototype.checkBundleStatus
+   * @returns boolean
+   */
+  checkBundleStatus: function () {
+    return this.checkObjectStatus(
+      this.dsoConfig.bundles,
+      this.bundleScripts,
+      this.bundleStyles,
+      "bundleids"
+    );
   },
 
   /**
@@ -489,15 +492,14 @@ DSOLoader.prototype = {
    * @param {object[]} outputStyles
    * @param {string} ids
    * @returns boolean
-   * @description Used to check the callback of an object being loader
+   * @description Used to check the callback status of an object being loaded
    */
   checkObjectStatus: function (object, outputScripts, outputStyles, ids) {
-    var nonInteractive = false;
-    var stdInteractive = false;
-    var customThreshold = false;
-
     for (var objectEntry = 0; object.length > objectEntry; objectEntry++) {
       var id = objectEntry;
+
+      var scripts = object[objectEntry].scripts;
+      var styles = object[objectEntry].styles;
 
       if (
         typeof scripts === "object" &&
@@ -505,7 +507,6 @@ DSOLoader.prototype = {
       ) {
         var scriptsTally = 0;
         var scriptsTallyOffset = 0;
-
         for (
           var outputScriptEntry = 0;
           outputScripts.length > outputScriptEntry;
@@ -517,10 +518,16 @@ DSOLoader.prototype = {
             scriptIdEntry++
           ) {
             if (outputScripts[outputScriptEntry][ids][scriptIdEntry] === id) {
-              if (outputScripts[outputScriptEntry].loaded === true) {
+              if (
+                typeof outputScripts[outputScriptEntry].loaded === "boolean" &&
+                outputScripts[outputScriptEntry].loaded
+              ) {
                 scriptsTally++;
               }
-              if (outputScripts[outputScriptEntry].error === true) {
+              if (
+                typeof outputScripts[outputScriptEntry].error === "boolean" &&
+                outputScripts[outputScriptEntry].error
+              ) {
                 scriptsTallyOffset++;
               }
             }
@@ -558,10 +565,16 @@ DSOLoader.prototype = {
             styleIdEntry++
           ) {
             if (outputStyles[outputStyleEntry][ids][styleIdEntry] === id) {
-              if (outputStyles[outputStyleEntry].loaded === true) {
+              if (
+                typeof outputStyles[outputStyleEntry].loaded === "boolean" &&
+                outputStyles[outputStyleEntry].loaded
+              ) {
                 stylesTally++;
               }
-              if (outputStyles[outputStyleEntry].error === true) {
+              if (
+                typeof outputStyles[outputStyleEntry].error === "boolean" &&
+                outputStyles[outputStyleEntry].error
+              ) {
                 stylesTallyOffset++;
               }
             }
@@ -585,8 +598,8 @@ DSOLoader.prototype = {
       if (typeof object[objectEntry].loaded === "undefined") {
         if (
           typeof object[objectEntry].scriptsLoaded === "boolean" &&
-          object[objectEntry].scriptsLoaded &&
           typeof object[objectEntry].stylesLoaded === "boolean" &&
+          object[objectEntry].scriptsLoaded &&
           object[objectEntry].stylesLoaded
         ) {
           object[objectEntry].loaded = true;
@@ -600,90 +613,82 @@ DSOLoader.prototype = {
           }
         }
       }
-
-      switch (object[objectEntry].threshold) {
-        case this.dsoConfig.nonInt:
-          if (
-            typeof object[objectEntry].loaded === "boolean" &&
-            object[objectEntry].loaded
-          ) {
-            nonInteractive = true;
-          } else {
-            nonInteractive = false;
-          }
-          break;
-
-        case this.dsoConfig.stdInt:
-          if (
-            typeof object[objectEntry].loaded === "boolean" &&
-            object[objectEntry].loaded
-          ) {
-            stdInteractive = true;
-          } else {
-            stdInteractive = false;
-          }
-          break;
-
-        default:
-          if (
-            typeof object[objectEntry].loaded === "boolean" &&
-            object[objectEntry].loaded
-          ) {
-            customThreshold = true;
-          } else {
-            customThreshold = false;
-          }
-          break;
-      }
     }
 
     // Group Callbacks
-    if (nonInteractive && !this.dsoConfig.onNonInteractiveLoaded) {
-      if (typeof this.dsoConfig.onNonInteractiveLoad === "function") {
-        this.dsoConfig.onNonInteractiveLoad();
+    var objectLoadedTally = 0;
+    var objectAcceptedTally = 0;
+
+    var highestThreshold = -3;
+    var highestThresholdEntry = undefined;
+
+    for (objectEntry = 0; object.length > objectEntry; objectEntry++) {
+      if (
+        typeof object[objectEntry].loaded === "boolean" &&
+        object[objectEntry].loaded
+      ) {
+        objectLoadedTally++;
       }
-      this.dsoConfig.onNonInteractiveLoaded = true;
+      if (
+        typeof object[objectEntry].accepted === "boolean" &&
+        object[objectEntry].accepted
+      ) {
+        objectAcceptedTally++;
+      }
+
+      if (
+        typeof object[objectEntry].accepted === "boolean" &&
+        typeof object[objectEntry].loaded === "boolean" &&
+        object[objectEntry].loaded &&
+        object[objectEntry].accepted
+      ) {
+        if (object[objectEntry].threshold > highestThreshold) {
+          highestThreshold = object[objectEntry].threshold;
+          highestThresholdEntry = objectEntry;
+        }
+      }
     }
-    if (stdInteractive && !this.dsoConfig.onInteractiveLoadLoaded) {
-      if (typeof this.dsoConfig.onNonInteractiveLoad === "function") {
-        this.dsoConfig.onInteractiveLoad();
+
+    if (
+      objectLoadedTally === objectAcceptedTally &&
+      typeof object[highestThresholdEntry].thresholdloaded === "undefined"
+    ) {
+      object[highestThresholdEntry].thresholdloaded = true;
+
+      if (
+        typeof object[highestThresholdEntry] !== "undefined" &&
+        typeof object[highestThresholdEntry].onthresholdload === "function"
+      ) {
+        object[highestThresholdEntry].onthresholdload();
       }
-      this.dsoConfig.onInteractiveLoadLoaded = true;
-    }
-    if (customThreshold && !this.dsoConfig.onCustomThresholdLoaded) {
-      if (typeof this.dsoConfig.onCustomThresholdLoaded === "function") {
-        this.dsoConfig.onCustomThresholdLoaded();
+
+      switch (highestThreshold) {
+        case this.dsoConfig.nonInt:
+          if (typeof this.dsoConfig.onNonInteractiveLoad === "function") {
+            this.dsoConfig.onNonInteractiveLoad();
+          }
+          this.dsoConfig.onNonInteractiveLoaded = true;
+          break;
+
+        case this.dsoConfig.stdInt:
+          if (typeof this.dsoConfig.onNonInteractiveLoad === "function") {
+            this.dsoConfig.onInteractiveLoad();
+          }
+          this.dsoConfig.onInteractiveLoadLoaded = true;
+          break;
+
+        default:
+          if (highestThreshold > 0) {
+            if (typeof this.dsoConfig.onCustomThresholdLoad === "function") {
+              this.dsoConfig.onCustomThresholdLoad();
+            }
+            this.dsoConfig.onCustomThresholdLoaded = true;
+          }
+          break;
       }
-      this.dsoConfig.onCustomThresholdLoaded = true;
     }
 
     return true;
-  },
-
-  /**
-   * @name DSOLoader.prototype.checkModuleStatus
-   * @returns boolean
-   */
-  checkModuleStatus: function () {
-    return this.checkObjectStatus(
-      this.dsoConfig.modules,
-      this.moduleScripts,
-      this.moduleStyles,
-      "moduleids"
-    );
-  },
-
-  /**
-   * @name DSOLoader.prototype.checkBundleStatus
-   * @returns boolean
-   */
-  checkBundleStatus: function () {
-    return this.checkObjectStatus(
-      this.dsoConfig.bundles,
-      this.bundleScripts,
-      this.bundleStyles,
-      "bundleids"
-    );
   },
 
   /**
@@ -691,115 +696,88 @@ DSOLoader.prototype = {
    * @returns void
    */
   loadModules: function () {
-    var scripts = document.createElement("div");
-    var styles = document.createElement("div");
-
-    scripts.id = "dsoModuleScripts";
-    styles.id = "dsoModuleStyles";
-
-    for (
-      var moduleScriptEntry = 0;
-      this.moduleScripts.length > moduleScriptEntry;
-      moduleScriptEntry++
-    ) {
-      var moduleScript = this.moduleScripts[moduleScriptEntry];
-      var script = this.createObjectElement("script", moduleScript, "");
-
-      if (script) {
-        script.onload = script.onreadystatechange = function () {
-          moduleScript.load = true;
-          this.checkModuleStatus();
-        }.bind(this);
-
-        script.onerror = function () {
-          moduleScript.error = true;
-          this.checkModuleStatus();
-        }.bind(this);
-
-        scripts.appendChild(script);
-      }
-    }
-
-    for (
-      moduleScriptEntry = 0;
-      this.moduleStyles.length > moduleScriptEntry;
-      moduleScriptEntry++
-    ) {
-      var moduleStyle = this.moduleStyles[moduleScriptEntry];
-      var style = this.createObjectElement("style", moduleStyle, "");
-
-      if (style) {
-        style.onload = style.onreadystatechange = function () {
-          moduleStyle.loaded = true;
-          this.checkModuleStatus();
-        }.bind(this);
-
-        style.onerror = function () {
-          moduleStyle.error = true;
-          this.checkModuleStatus();
-        }.bind(this);
-
-        styles.appendChild(style);
-      }
-    }
-
-    document.body.appendChild(scripts);
-    document.body.appendChild(styles);
+    return this.loadObjects(
+      this.moduleScripts,
+      this.moduleStyles,
+      "dsoModuleScripts",
+      "dsoModuleStyles"
+    );
   },
 
   /**
    * @name DSOLoader.prototype.loadBundles
    * @returns void
-   * @description Logic for the load process
    */
   loadBundles: function () {
+    return this.loadObjects(
+      this.bundleScripts,
+      this.bundleStyles,
+      "dsoBundleScripts",
+      "dsoBundleStyles"
+    );
+  },
+
+  /**
+   * @name DSOLoader.prototype.loadObjects
+   * @returns void
+   * @description Logic behind the load process
+   */
+  loadObjects: function (outputScripts, outputStyles, scriptsId, stylesId) {
     var scripts = document.createElement("div");
     var styles = document.createElement("div");
 
-    scripts.id = "dsoBundleScripts";
-    styles.id = "dsoBundleStyles";
+    scripts.id = scriptsId;
+    styles.id = stylesId;
 
     for (
-      var bundleScriptEntry = 0;
-      this.bundleScripts.length > bundleScriptEntry;
-      bundleScriptEntry++
+      var outputScriptEntry = 0;
+      outputScripts.length > outputScriptEntry;
+      outputScriptEntry++
     ) {
-      var bundleScript = this.bundleScripts[bundleScriptEntry];
-      var script = this.createObjectElement("script", bundleScript, "");
+      var outputScript = outputScripts[outputScriptEntry];
+      var script = this.createObjectElement("script", outputScript, "");
 
       if (script) {
-        script.onload = script.onreadystatechange = function () {
-          bundleScript.loaded = true;
-          this.checkBundleStatus();
-        }.bind(this);
+        script.onload = (function (entry) {
+          return function () {
+            outputScripts[entry].loaded = true;
+            this.checkBundleStatus();
+          };
+        })(outputScriptEntry).bind(this);
 
-        script.onerror = function () {
-          bundleScript.error = true;
-          this.checkBundleStatus();
-        }.bind(this);
+        script.onerror = (function (entry) {
+          return function () {
+            outputScripts[entry].error = true;
+            this.checkBundleStatus();
+          };
+        })(outputScriptEntry).bind(this);
 
         scripts.appendChild(script);
       }
     }
 
     for (
-      bundleScriptEntry = 0;
-      this.bundleStyles.length > bundleScriptEntry;
-      bundleScriptEntry++
+      let outputStyleEntry = 0;
+      outputStyles.length > outputStyleEntry;
+      outputStyleEntry++
     ) {
-      var bundleStyle = this.bundleStyles[bundleScriptEntry];
-      var style = this.createObjectElement("style", bundleStyle, "");
+      var outputStyle = outputStyles[outputStyleEntry];
+      var style = this.createObjectElement("style", outputStyle, "");
 
       if (style) {
-        style.onload = style.onreadystatechange = function () {
-          bundleStyle.loaded = true;
-          this.checkBundleStatus();
-        }.bind(this);
+        style.onload = (function (entry) {
+          return function () {
+            outputStyles[entry].loaded = true;
+            this.checkBundleStatus();
+          };
+        })(outputStyleEntry).bind(this);
 
-        style.onerror = function () {
-          bundleStyle.error = true;
-          this.checkBundleStatus();
-        }.bind(this);
+        style.onerror = (function (entry) {
+          return function () {
+            outputStyles[entry].error = true;
+            this.checkBundleStatus();
+          };
+        })(outputStyleEntry).bind(this);
 
         styles.appendChild(style);
       }

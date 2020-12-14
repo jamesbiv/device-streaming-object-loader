@@ -1,16 +1,13 @@
 /**
  * @constructor DSOPing
- * @param {boolean} debug
  */
-export var DSOPing = function (debug = false) {
+export var DSOPing = function () {
   /*
    * Global declarations
    */
-  this.debug = debug;
-
   // For debugging purposes
-  this.performanceEnabled = true;
-  this.xhrEnabled = true;
+  this.performanceEnabled = false;
+  this.xhrEnabled = false;
 
   // Every pingInterval we will perform the ping (default 30secs)
   this.pingInterval = false;
@@ -19,8 +16,7 @@ export var DSOPing = function (debug = false) {
   this.pingKbps = -1;
 
   // Ping configuration
-  this.pingUrl =
-    "https://raw.githubusercontent.com/jamesbiv/device-streaming-object-loader/master/src/ping.png";
+  this.pingUrl = "https://jamesbiv.tech/demos/dsoloader/ping.png";
 
   /**
    * Only used for browsers that do not support transferSize (Safari).
@@ -52,7 +48,7 @@ export var DSOPing = function (debug = false) {
  */
 DSOPing.prototype = {
   ping: function (callback) {
-    if (this.debug) {
+    if (DEBUG) {
       console.log("Ping?");
     }
 
@@ -80,7 +76,7 @@ DSOPing.prototype = {
     }
 
     this.pingBuffer[this.pingBufferInc].onload = function (event) {
-      if (this.debug) {
+      if (DEBUG) {
         console.log("Pong!");
       }
 
@@ -108,14 +104,14 @@ DSOPing.prototype = {
         }
       }
 
-      // To KBps a further 1024 for MBps
+      // Convert KBps a further 1024 to MBps
       this.pingBufferKpbs[this.pingBufferInc] =
         (transferSize * 8) / transferTime / 1024;
 
       // Save to the DSO
       this.pingKbps = this.pingBufferKpbs[this.pingBufferInc];
 
-      if (this.debug) {
+      if (DEBUG) {
         console.log(this.pingKbps);
       }
 

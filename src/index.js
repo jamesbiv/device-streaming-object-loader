@@ -4,7 +4,7 @@ import { DSOConfig } from "./DSOConfig";
 import { DSOPing } from "./DSOPing";
 import { DSOLoader } from "./DSOLoader";
 
-var dsoConfig = new DSOConfig(true);
+var dsoConfig = new DSOConfig();
 
 /* The bundling and module defintions */
 
@@ -14,16 +14,12 @@ var dsoConfig = new DSOConfig(true);
 dsoConfig.bundles = [
   {
     threshold: dsoConfig.nonInt,
-    label: "optional", // Not sure if its needed but we'll have it for now
     type: "initial", // Initial means we'll download respecitivly of performance (default for noinit)
-    method: "promise|element|xhr", // Load method, allowing for different object types to be loaded
     maxMedia: false, // Determine media max (optional) (untested)
     minMedia: false, // Determine media min (optional) (untested)
-    useragent: false, // Load based on useragent (optional) (untested)
+    userAgent: false, // Load based on useragent (optional) (untested)
     // Loading our vendors (here the difference is that vendors are loaded first)
-    vendorJs: [
-      'scripts/nonInteractiveVendor.js|deferred=deferred|type="text/javascript"',
-    ],
+    vendorJs: ["scripts/nonInteractiveVendor.js|deferred=deferred"],
     vendorCss: ["css/nonInteractiveVendor.css"],
     // Loading the app
     scripts: ["scripts/nonInteractiveApp.js|deferred=deferred"],
@@ -31,7 +27,10 @@ dsoConfig.bundles = [
     // initialisers that will run after all has loaded (optional)
     onload: function () {
       // event callback after the whole bundle has loaded
-      alert("Non Interactive Loaded");
+      console.log("Non Interactive Bundle Loaded");
+    },
+    onthresholdload: function () {
+      console.log("Non Interactive Bundle Threshold Loaded");
     },
     onscriptload: function () {}, // event callback after scripts have loaded
     onstyleload: function () {}, // event callback after styles have loaded
@@ -39,7 +38,6 @@ dsoConfig.bundles = [
   {
     threshold: dsoConfig.stdInt, // We can have more than one of these based on resolution and breakpoint
     type: "inherit",
-    breakpoint: false,
     minWidth: false,
     maxWidth: false,
     vendorJs: ["scripts/interactiveVendor.js"],
@@ -47,13 +45,15 @@ dsoConfig.bundles = [
     scripts: ["scripts/interactiveApp.js"],
     styles: ["css/interactiveApp.css"],
     onload: function () {
-      alert("Interactive Loaded");
+      console.log("Interactive Bundle Loaded");
+    },
+    onthresholdload: function () {
+      console.log("Interactive Bundle Threshold Loaded");
     },
   },
   {
-    threshold: 200, // Set at Kpbs I.E 200kpbs
+    threshold: 100, // Set at Kpbs I.E 100KBps
     type: "inherit",
-    breakpoint: false,
     minWidth: false,
     maxMwidth: false,
     vendorJs: ["scripts/customThresholdVendor.js"],
@@ -61,18 +61,24 @@ dsoConfig.bundles = [
     scripts: ["scripts/customThresholdApp.js"],
     styles: ["css/customThresholdApp.css"],
     onload: function () {
-      alert("Custom Threshold Loaded");
+      console.log("Custom Bundle Loaded");
+    },
+    onthresholdload: function () {
+      console.log("Custom Bundle Threshold Loaded");
     },
   },
   {
-    threshold: 500, // Hi def mode at 500kpbs
+    threshold: 200, // Hi def mode at 200KBps
     type: "inherit",
     vendorJs: ["scripts/richCustomThresholdVendor.js"],
     vendorCss: ["css/richCustomThresholdVendor.css"],
     scripts: ["scripts/richCustomThresholdApp.js"],
     styles: ["css/richCustomThresholdApp.css"],
     onload: function () {
-      alert("Rich Custom Threshold Loaded");
+      console.log("Rich Custom Bundle Loaded");
+    },
+    onthresholdload: function () {
+      console.log("Rich Custom Bundle Threshold Loaded");
     },
   },
 ];
@@ -82,22 +88,43 @@ dsoConfig.bundles = [
  */
 dsoConfig.modules = [
   {
-    scripts: ['/build/sw_cache.js|deferred="deferred"|type="text/javascript"'],
+    scripts: ['/scripts/sw.js|deferred="deferred"|type="text/javascript"'],
     onload: function () {
       /* Serviceworker config or importer goes here */
       return true;
     },
+    accepted: true,
   },
   {
     scripts: ["lazyLoader.js"],
     styles: ["lazyStyle.css"],
     onload: function () {},
+    accepted: true,
   },
 ];
 
+/*
+ * Mode Callbacks
+ */
+dsoConfig.onNonInteractiveLoad = function () {
+  console.log("onNonInteractiveLoad: Loaded");
+  document.getElementById("thresholdOutput").innerHTML = "onNonInteractiveLoad";
+};
+
+dsoConfig.onInteractiveLoad = function () {
+  console.log("onInteractiveLoad: Loaded");
+  document.getElementById("thresholdOutput").innerHTML = "onInteractiveLoad";
+};
+
+dsoConfig.onCustomThresholdLoad = function () {
+  console.log("onCustomThresholdLoad: Loaded");
+  document.getElementById("thresholdOutput").innerHTML =
+    "onCustomThresholdLoad";
+};
+
 /* End of bundling and module defintions */
 
-if (dsoConfig.debug) {
+if (DEBUG) {
   dsoConfig.startLoadTime = new Date().getTime();
 
   console.log("Debug: true");
@@ -113,6 +140,7 @@ if (dsoConfig.debug) {
 }
 
 if (
+  DEBUG &&
   typeof dsoConfig.setResourceTimingBufferSize !== undefined &&
   typeof performance.setResourceTimingBufferSize === "function"
 ) {
@@ -122,30 +150,12 @@ if (
 }
 
 if (dsoConfig.ping) {
-  var dsoPing = new DSOPing(dsoConfig.debug);
+  var dsoPing = new DSOPing();
 
   dsoPing.ping();
 }
 
-var dsoLoader = new DSOLoader(dsoConfig, dsoPing, dsoConfig.debug);
-
-/**
- * @name dsoModules
- * @returns boolean
- */
-var dsoModules = function () {
-  if (dsoConfig.debug) {
-    console.log("Running Modules ...");
-  }
-
-  /* dsoLoader.createModuleLoadObjects() */
-  dsoLoader.createModuleLoadObjects();
-
-  /* dsoLoader.loadModules() */
-  dsoLoader.loadModules();
-
-  return true;
-};
+var dsoLoader = new DSOLoader(dsoConfig, dsoPing);
 
 /**
  * @name dsoInit
@@ -153,7 +163,7 @@ var dsoModules = function () {
  * @returns boolean
  */
 var dsoInit = function (fallover = false) {
-  if (dsoConfig.debug) {
+  if (DEBUG) {
     if (fallover) {
       console.log("Running Init ... [Fallover Mode!]");
     } else {
@@ -161,7 +171,7 @@ var dsoInit = function (fallover = false) {
     }
   }
 
-  if (typeof dsoPing === "object") {
+  if (DEBUG && typeof dsoPing === "object") {
     // Last KBps value
     var kbps = Number(dsoPing.pingKbps.toFixed(2));
 
@@ -180,14 +190,27 @@ var dsoInit = function (fallover = false) {
 
   /**
    * DSOModules
-   * Maybe we can put this in the main thread, I found performance improvements keeping it here for now though
    */
-  dsoModules();
+  if (DEBUG) {
+    console.log("Running Modules ...");
+  }
+
+  dsoLoader.createModuleLoadObjects();
+  dsoLoader.loadModules();
+
+  /**
+   * DSOBundles
+   */
+  if (DEBUG) {
+    console.log("Running Bundles ...");
+  }
 
   dsoLoader.defineBundleAcceptance(fallover);
   dsoLoader.loadBundles();
 
-  // If we are in fallover mode we try to ping one more time but this time we'll use a callback
+  /*
+   * If fallover is true attempt to ping again and call loadBundles inside a callback
+   */
   if (dsoConfig.ping && fallover) {
     dsoPing.ping(function () {
       dsoLoader.defineBundleAcceptance();
@@ -199,14 +222,19 @@ var dsoInit = function (fallover = false) {
 };
 
 if (dsoConfig.ping) {
-  // Run when the first ping result comes in, otherwise fallover
+  /*
+   * Poll until the first ping result comes in, otherwise set fallover to true
+   */
   var dsoInitPollFrequency = 1; // The rate at which will poll init
   var dsoInitPollFallover = 1000;
   var dsoInitPollClock = 0;
 
+  var dsoEnablePromises = false;
+
   var dsoInitPoll = function () {};
 
   if (
+    dsoEnablePromises &&
     typeof Promise === "function" &&
     Promise.toString().indexOf("[native code]") !== -1
   ) {
@@ -224,6 +252,9 @@ if (dsoConfig.ping) {
       await dsoSleep(dsoInitPollFrequency);
 
       if (dsoPing.pingKbps > 0) {
+        if (DEBUG && typeof dsoInitPollClock === "number") {
+          console.log("Poll clock: " + dsoInitPollClock + " tick(s)");
+        }
         dsoInit();
       } else if (dsoInitPollClock > dsoInitPollFallover) {
         dsoInit(true);
@@ -232,7 +263,7 @@ if (dsoConfig.ping) {
       }
     };
   } else {
-    if (dsoConfig.debug) {
+    if (DEBUG) {
       console.log("Promises: false");
     }
 
@@ -240,7 +271,10 @@ if (dsoConfig.ping) {
       setTimeout(function () {
         dsoInitPollClock += dsoInitPollFrequency;
 
-        if (dsoConfig.pingKbps > 0) {
+        if (dsoPing.pingKbps > 0) {
+          if (DEBUG && typeof dsoInitPollClock === "number") {
+            console.log("Poll clock: " + dsoInitPollClock + " tick(s)");
+          }
           dsoInit();
         } else if (dsoInitPollClock > dsoInitPollFallover) {
           dsoInit(true);
@@ -254,8 +288,4 @@ if (dsoConfig.ping) {
   dsoInitPoll();
 } else {
   dsoInit();
-}
-
-if (dsoConfig.debug && typeof dsoInitPollClock === "number") {
-  console.log("Poll clock: " + dsoInitPollClock + " tick(s)");
 }

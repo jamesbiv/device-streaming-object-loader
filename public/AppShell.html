@@ -31,10 +31,11 @@
 
 	<p>Last KBps: <span id="kbpsOutput">0.00</span> (<span id="mbpsOutput">0.00</span> MBps)</p>
 	<p>TransferSize: <span id="resourceOutput">0</span></p>
+	<p><strong>Threshold Loaded: <span id="thresholdOutput">Loading &hellip;</span></strong></p>
 
 	<h2>Console Log</h2>
 
-	<textarea id="logger" rows=10 style="width: 90%"></textarea>
+	<textarea id="consoleOuput" rows="10" style="width: 90%"></textarea>
 	<script type="text/javascript">
 		(function () {
 			if (!console) {
@@ -42,7 +43,7 @@
 			}
 
 			var oldConsoleLog = console.log;
-			var logger = document.getElementById("logger");
+			var consoleOuput = document.getElementById("consoleOuput");
 
 			Error.prepareStackTrace = function (_, structuredStackTrace) {
 				return (
@@ -53,23 +54,31 @@
 			};
 
 			var getStackTrace = function () {
-				var obj = {};
-				Error.captureStackTrace(obj, getStackTrace);
-				return obj.stack;
+				if (typeof Error.captureStackTrace === "function") {
+					var object = {};
+					Error.captureStackTrace(object, getStackTrace);
+					return object.stack;
+				} else {
+					return "console.log";
+				}
 			};
 
 			console.log = function (message) {
-				if (typeof message === "object") {
-					logger.innerHTML +=
-						"<" +
-						getStackTrace() +
-						">: " +
-						(JSON && JSON.stringify ? JSON.stringify(message) : String(message)) +
-						"\r\n";
-				} else {
-					logger.innerHTML += "<" + getStackTrace() + ">: " + message + "\r\n";
-				}
-				logger.scrollTop = logger.scrollHeight;
+				var formattedMessage =
+					typeof message === "object"
+						? JSON && JSON.stringify
+							? JSON.stringify(message)
+							: String(message)
+						: message;
+
+				consoleOuput.innerHTML +=
+					"<" +
+					getStackTrace() +
+					">: " +
+					formattedMessage +
+					"\r\n";
+
+				consoleOuput.scrollTop = consoleOuput.scrollHeight;
 			};
 		})();
 	</script>
@@ -81,7 +90,7 @@
 
 	<!-- For now this is a nonblocking include, for production builds dsoLoader.js needs 
 	to be inserted as inline in order to ensure it is a part of the inital payload -->
-	<script src="../dist/dsoLoader.js" type="text/javascript"></script>
+	<script src="../dist/dsoLoader.min.js" type="text/javascript"></script>
 </body>
 
 </html>
