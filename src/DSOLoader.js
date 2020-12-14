@@ -90,9 +90,9 @@ DSOLoader.prototype = {
 
     element.setAttribute(link, objectElement.file);
 
-    if (typeof id === "string") {
-      element.setAttribute("id", id);
-    }
+    //if (typeof id === "string") {
+    //  element.setAttribute("id", id);
+    //}
 
     Object.keys(attributes).forEach(function (key) {
       element.setAttribute(key, attributes[key]);
@@ -173,17 +173,6 @@ DSOLoader.prototype = {
 
             var entryFound = false;
 
-            /*for (
-              let outputScriptEntry = 0;
-              outputScripts.length > outputScriptEntry;
-              outputScriptEntry++
-            ) {
-              if (outputScripts[outputScriptEntry].file === entryString[0]) {
-                outputScripts[outputScriptEntry][ids].push(inputEntry);
-                entryFound = true;
-              }
-            }*/
-
             if (
               typeof this.archivedObjects === "object" &&
               this.archivedObjects.length > 0
@@ -203,25 +192,21 @@ DSOLoader.prototype = {
 
             // We set the default script behavior here
             if (!entryFound) {
-              if (entryType.type === "scripts") {
-                var script = { [ids]: [] };
-                script[ids].push(inputEntry);
-                script.file = entryString[0];
-                script.attributes = entryString.slice(1).join("|");
-                script.loaded = false;
-                script.error = false;
-
-                outputScripts.push(script);
-              } else {
-                var style = { [ids]: [] };
-                style[ids].push(inputEntry);
-                style.file = entryString[0];
-                style.attributes = entryString.slice(1).join("|");
-                style.loaded = false;
-                style.error = false;
-
-                outputStyles.push(style);
-              }
+              entryType.type === "scripts"
+                ? outputScripts.push({
+                    [ids]: [inputEntry],
+                    file: entryString[0],
+                    attributes: entryString.slice(1).join("|"),
+                    loaded: false,
+                    error: false,
+                  })
+                : outputStyles.push({
+                    [ids]: [inputEntry],
+                    file: entryString[0],
+                    attributes: entryString.slice(1).join("|"),
+                    loaded: false,
+                    error: false,
+                  });
             }
           }
         }
@@ -499,13 +484,15 @@ DSOLoader.prototype = {
     for (var objectEntry = 0; object.length > objectEntry; objectEntry++) {
       var id = objectEntry;
 
+      var scripts = object[objectEntry].scripts;
+      var styles = object[objectEntry].styles;
+
       if (
         typeof scripts === "object" &&
         typeof object[objectEntry].scriptsLoaded === "undefined"
       ) {
         var scriptsTally = 0;
         var scriptsTallyOffset = 0;
-
         for (
           var outputScriptEntry = 0;
           outputScripts.length > outputScriptEntry;
@@ -768,38 +755,46 @@ DSOLoader.prototype = {
       var script = this.createObjectElement("script", bundleScript, "");
 
       if (script) {
-        script.onload = script.onreadystatechange = function () {
-          bundleScript.loaded = true;
-          this.checkBundleStatus();
-        }.bind(this);
+        script.onload = (function (entry) {
+          return function () {
+            this.bundleScripts[entry].loaded = true;
+            this.checkBundleStatus();
+          };
+        })(bundleScriptEntry).bind(this);
 
-        script.onerror = function () {
-          bundleScript.error = true;
-          this.checkBundleStatus();
-        }.bind(this);
+        script.onerror = (function (entry) {
+          return function () {
+            this.bundleScripts[entry].error = true;
+            this.checkBundleStatus();
+          };
+        })(bundleScriptEntry).bind(this);
 
         scripts.appendChild(script);
       }
     }
 
     for (
-      bundleScriptEntry = 0;
-      this.bundleStyles.length > bundleScriptEntry;
-      bundleScriptEntry++
+      let bundleStyleEntry = 0;
+      this.bundleStyles.length > bundleStyleEntry;
+      bundleStyleEntry++
     ) {
-      var bundleStyle = this.bundleStyles[bundleScriptEntry];
+      var bundleStyle = this.bundleStyles[bundleStyleEntry];
       var style = this.createObjectElement("style", bundleStyle, "");
 
       if (style) {
-        style.onload = style.onreadystatechange = function () {
-          bundleStyle.loaded = true;
-          this.checkBundleStatus();
-        }.bind(this);
+        style.onload = (function (entry) {
+          return function () {
+            this.bundleStyles[entry].loaded = true;
+            this.checkBundleStatus();
+          };
+        })(bundleStyleEntry).bind(this);
 
-        style.onerror = function () {
-          bundleStyle.error = true;
-          this.checkBundleStatus();
-        }.bind(this);
+        style.onerror = (function (entry) {
+          return function () {
+            this.bundleStyles[entry].error = true;
+            this.checkBundleStatus();
+          };
+        })(bundleStyleEntry).bind(this);
 
         styles.appendChild(style);
       }

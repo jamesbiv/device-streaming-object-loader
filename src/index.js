@@ -22,7 +22,7 @@ dsoConfig.bundles = [
     useragent: false, // Load based on useragent (optional) (untested)
     // Loading our vendors (here the difference is that vendors are loaded first)
     vendorJs: [
-      'scripts/nonInteractiveVendor.js|deferred=deferred|type="text/javascript"',
+      'scripts/nonInteractiveVendor.js|deferred=deferred',
     ],
     vendorCss: ["css/nonInteractiveVendor.css"],
     // Loading the app
